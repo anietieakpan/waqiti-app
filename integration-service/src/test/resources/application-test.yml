@@ -1,0 +1,23 @@
+# File: integration-service/src/test/resources/application-test.yml
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+  security:
+    jwt:
+      token:
+        secret-key: test-secret-key-for-unit-tests-only-not-for-production
+        access-token-expire-length: 3600000
+        refresh-token-expire-length: 86400000
+
+# Disable discovery client for unit tests
+eureka:
+  client:
+    enabled: false

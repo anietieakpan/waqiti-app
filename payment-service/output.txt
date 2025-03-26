@@ -1,0 +1,953 @@
+.
+├── api-gateway
+│   ├── Dockerfile
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       │   ├── java
+│       │   │   └── com
+│       │   │       └── p2pfinance
+│       │   │           └── gateway
+│       │   │               ├── ApiGatewayApplication.java
+│       │   │               ├── config
+│       │   │               │   ├── JsonConfig.java
+│       │   │               │   ├── ObservabilityConfig.java
+│       │   │               │   ├── RateLimiterConfig.java
+│       │   │               │   ├── RouteConfig.java
+│       │   │               │   └── SecurityConfig.java
+│       │   │               ├── controller
+│       │   │               │   └── FallbackController.java
+│       │   │               ├── error
+│       │   │               │   └── GlobalErrorHandler.java
+│       │   │               ├── filter
+│       │   │               │   ├── LoggingFilter.java
+│       │   │               │   ├── RequestHeaderFilter.java
+│       │   │               │   └── TracingFilter.java
+│       │   │               └── security
+│       │   │                   ├── AuthenticationFilter.java
+│       │   │                   └── JwtUtil.java
+│       │   └── resources
+│       │       └── application.yml
+│       └── test
+│           ├── java
+│           │   └── com
+│           │       └── p2pfinance
+│           │           └── gateway
+│           │               ├── ApiGatewayIntegrationTest.java
+│           │               └── filter
+│           │                   └── TracingFilterTest.java
+│           └── resources
+│               └── application-test.yml
+├── common
+│   ├── pom.xml
+│   ├── src
+│   │   └── main
+│   │       └── java
+│   │           └── com
+│   │               └── p2pfinance
+│   │                   └── common
+│   │                       ├── audit
+│   │                       │   ├── Auditable.java
+│   │                       │   ├── AuditConfig.java
+│   │                       │   └── SpringSecurityAuditorAware.java
+│   │                       ├── config
+│   │                       │   ├── OpenApiConfig.java
+│   │                       │   └── TracingConfig.java
+│   │                       ├── event
+│   │                       │   ├── AbstractDomainEvent.java
+│   │                       │   ├── DomainEvent.java
+│   │                       │   └── EventPublisher.java
+│   │                       ├── exception
+│   │                       │   ├── BusinessException.java
+│   │                       │   ├── DuplicateResourceException.java
+│   │                       │   ├── ErrorResponse.java
+│   │                       │   ├── GlobalExceptionHandler.java
+│   │                       │   ├── InsufficientFundsException.java
+│   │                       │   ├── InvalidResourceStateException.java
+│   │                       │   ├── ResourceNotFoundException.java
+│   │                       │   ├── TransactionFailedException.java
+│   │                       │   └── ValidationErrorResponse.java
+│   │                       ├── security
+│   │                       │   └── OAuth2Configuration.java
+│   │                       └── util
+│   │                           ├── DtoUtils.java
+│   │                           ├── PageResponse.java
+│   │                           └── StringUtils.java
+│   └── target
+│       ├── classes
+│       │   └── com
+│       │       └── p2pfinance
+│       │           └── common
+│       │               ├── audit
+│       │               │   ├── Auditable.class
+│       │               │   ├── AuditConfig.class
+│       │               │   └── SpringSecurityAuditorAware.class
+│       │               ├── config
+│       │               │   ├── OpenApiConfig.class
+│       │               │   └── TracingConfig.class
+│       │               ├── event
+│       │               │   ├── AbstractDomainEvent.class
+│       │               │   ├── DomainEvent.class
+│       │               │   └── EventPublisher.class
+│       │               ├── exception
+│       │               │   ├── BusinessException.class
+│       │               │   ├── DuplicateResourceException.class
+│       │               │   ├── ErrorResponse$ErrorResponseBuilder.class
+│       │               │   ├── ErrorResponse.class
+│       │               │   ├── GlobalExceptionHandler.class
+│       │               │   ├── InsufficientFundsException.class
+│       │               │   ├── InvalidResourceStateException.class
+│       │               │   ├── ResourceNotFoundException.class
+│       │               │   ├── TransactionFailedException.class
+│       │               │   └── ValidationErrorResponse.class
+│       │               ├── security
+│       │               │   └── OAuth2Configuration.class
+│       │               └── util
+│       │                   ├── DtoUtils.class
+│       │                   ├── PageResponse.class
+│       │                   └── StringUtils.class
+│       ├── common-0.1.0-SNAPSHOT.jar
+│       ├── failsafe-reports
+│       │   └── failsafe-summary.xml
+│       ├── generated-sources
+│       │   └── annotations
+│       ├── maven-archiver
+│       │   └── pom.properties
+│       └── maven-status
+│           └── maven-compiler-plugin
+│               └── compile
+│                   └── default-compile
+│                       ├── createdFiles.lst
+│                       └── inputFiles.lst
+├── config-service
+│   ├── pom.xml
+│   └── src
+│       └── main
+│           ├── java
+│           │   └── com
+│           │       └── p2pfinance
+│           │           └── config
+│           │               └── ConfigServiceApplication.java
+│           └── resources
+│               └── application.yml
+├── discovery-service
+│   ├── pom.xml
+│   └── src
+│       └── main
+│           ├── java
+│           │   └── com
+│           │       └── p2pfinance
+│           │           └── discovery
+│           │               └── DiscoveryServiceApplication.java
+│           └── resources
+│               └── application.yml
+├── docker-compose.yml
+├── exportjava.sh
+├── exportyaml.sh
+├── improved-testing-strategy.md
+├── integration-service
+│   ├── Dockerfile
+│   ├── pom.xml
+│   ├── src
+│   │   ├── main
+│   │   │   ├── java
+│   │   │   │   └── com
+│   │   │   │       └── p2pfinance
+│   │   │   │           └── integration
+│   │   │   │               ├── config
+│   │   │   │               │   ├── CyclosConfig.java
+│   │   │   │               │   ├── FeignClientConfig.java
+│   │   │   │               │   └── FineractConfig.java
+│   │   │   │               ├── cyclos
+│   │   │   │               │   ├── api
+│   │   │   │               │   │   └── CyclosApiClient.java
+│   │   │   │               │   ├── dto
+│   │   │   │               │   │   ├── AccountBalanceResponse.java
+│   │   │   │               │   │   ├── AccountCreationRequest.java
+│   │   │   │               │   │   ├── AccountResponse.java
+│   │   │   │               │   │   ├── CustomFields.java
+│   │   │   │               │   │   ├── PaymentDestination.java
+│   │   │   │               │   │   ├── PaymentRequest.java
+│   │   │   │               │   │   ├── PaymentResponse.java
+│   │   │   │               │   │   ├── UserRegistrationRequest.java
+│   │   │   │               │   │   └── UserRegistrationResponse.java
+│   │   │   │               │   └── service
+│   │   │   │               │       ├── CyclosAuthService.java
+│   │   │   │               │       └── CyclosIntegrationService.java
+│   │   │   │               ├── fineract
+│   │   │   │               │   ├── api
+│   │   │   │               │   │   └── FineractApiClient.java
+│   │   │   │               │   ├── dto
+│   │   │   │               │   │   ├── ClientRequest.java
+│   │   │   │               │   │   ├── ClientResponse.java
+│   │   │   │               │   │   ├── SavingsAccountRequest.java
+│   │   │   │               │   │   ├── SavingsAccountResponse.java
+│   │   │   │               │   │   ├── TransactionRequest.java
+│   │   │   │               │   │   └── TransactionResponse.java
+│   │   │   │               │   └── service
+│   │   │   │               │       └── FineractIntegrationService.java
+│   │   │   │               └── IntegrationServiceApplication.java
+│   │   │   └── resources
+│   │   │       └── application.yml
+│   │   └── test
+│   │       ├── java
+│   │       │   └── com
+│   │       │       └── p2pfinance
+│   │       │           └── integration
+│   │       │               └── service
+│   │       │                   └── FeignIntegrationServiceTest.java
+│   │       └── resources
+│   │           └── application-test.yml
+│   └── target
+│       ├── classes
+│       │   └── application.yml
+│       ├── generated-sources
+│       │   └── annotations
+│       ├── generated-test-sources
+│       │   └── test-annotations
+│       └── test-classes
+├── javafiles.txt
+├── kubernetes
+│   ├── configmap.yaml
+│   ├── environments
+│   │   ├── dev
+│   │   └── prod
+│   ├── namespace.yaml
+│   └── services
+├── latest-tree.txt
+├── mycoconuttree.txt
+├── mytrees.txt
+├── mytree.txt
+├── myt.txt
+├── notification-service
+│   ├── Dockerfile
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       │   ├── java
+│       │   │   └── com
+│       │   │       └── p2pfinance
+│       │   │           └── notification
+│       │   │               ├── api
+│       │   │               │   ├── NotificationController.java
+│       │   │               │   ├── NotificationPreferencesController.java
+│       │   │               │   └── NotificationTemplateController.java
+│       │   │               ├── config
+│       │   │               │   ├── FirebaseConfig.java
+│       │   │               │   └── KafkaConsumerConfig.java
+│       │   │               ├── domain
+│       │   │               │   ├── NotificationEnums.java
+│       │   │               │   ├── Notification.java
+│       │   │               │   ├── NotificationPreferences.java
+│       │   │               │   └── NotificationTemplate.java
+│       │   │               ├── dto
+│       │   │               │   └── NotificationDTOs.java
+│       │   │               ├── event
+│       │   │               │   └── NotificationEvents.java
+│       │   │               ├── messaging
+│       │   │               │   └── NotificationEventListener.java
+│       │   │               ├── NotificationServiceApplication.java
+│       │   │               ├── repository
+│       │   │               │   ├── NotificationPreferencesRepository.java
+│       │   │               │   ├── NotificationRepository.java
+│       │   │               │   └── NotificationTemplateRepository.java
+│       │   │               └── service
+│       │   │                   ├── NotificationPreferencesService.java
+│       │   │                   ├── NotificationSenderService.java
+│       │   │                   ├── NotificationService.java
+│       │   │                   ├── NotificationTemplateService.java
+│       │   │                   └── TemplateRenderer.java
+│       │   └── resources
+│       │       ├── application.yml
+│       │       └── db
+│       │           └── migration
+│       │               └── V1__create_notification_tables.sql
+│       └── test
+│           └── resources
+│               └── application-test.yml
+├── payment-service
+│   ├── Dockerfile
+│   ├── logs
+│   │   ├── payment-service.log
+│   │   └── payment-service.log.2025-03-18.0.gz
+│   ├── output2.txt
+│   ├── output.txt
+│   ├── pom.xml
+│   ├── src
+│   │   ├── main
+│   │   │   ├── java
+│   │   │   │   └── com
+│   │   │   │       └── p2pfinance
+│   │   │   │           └── payment
+│   │   │   │               ├── api
+│   │   │   │               │   ├── GlobalExceptionHandler.java
+│   │   │   │               │   ├── PaymentRequestController.java
+│   │   │   │               │   ├── ScheduledPaymentController.java
+│   │   │   │               │   └── SplitPaymentController.java
+│   │   │   │               ├── client
+│   │   │   │               │   ├── dto
+│   │   │   │               │   │   ├── TransferRequest.java
+│   │   │   │               │   │   ├── TransferResponse.java
+│   │   │   │               │   │   ├── UserProfileResponse.java
+│   │   │   │               │   │   ├── UserResponse.java
+│   │   │   │               │   │   └── WalletResponse.java
+│   │   │   │               │   ├── UserServiceClient.java
+│   │   │   │               │   └── WalletServiceClient.java
+│   │   │   │               ├── domain
+│   │   │   │               │   ├── InvalidPaymentOperationException.java
+│   │   │   │               │   ├── InvalidPaymentStatusException.java
+│   │   │   │               │   ├── PaymentFailedException.java
+│   │   │   │               │   ├── PaymentLimitExceededException.java
+│   │   │   │               │   ├── PaymentRequest.java
+│   │   │   │               │   ├── PaymentRequestNotFoundException.java
+│   │   │   │               │   ├── PaymentRequestStatus.java
+│   │   │   │               │   ├── ScheduledPaymentExecution.java
+│   │   │   │               │   ├── ScheduledPaymentExecutionStatus.java
+│   │   │   │               │   ├── ScheduledPaymentFrequency.java
+│   │   │   │               │   ├── ScheduledPayment.java
+│   │   │   │               │   ├── ScheduledPaymentNotFoundException.java
+│   │   │   │               │   ├── ScheduledPaymentStatus.java
+│   │   │   │               │   ├── SplitPayment.java
+│   │   │   │               │   ├── SplitPaymentNotFoundException.java
+│   │   │   │               │   ├── SplitPaymentParticipant.java
+│   │   │   │               │   └── SplitPaymentStatus.java
+│   │   │   │               ├── dto
+│   │   │   │               │   ├── AddParticipantRequest.java
+│   │   │   │               │   ├── ApprovePaymentRequestRequest.java
+│   │   │   │               │   ├── CancelPaymentRequestRequest.java
+│   │   │   │               │   ├── CancelScheduledPaymentRequest.java
+│   │   │   │               │   ├── CreatePaymentRequestRequest.java
+│   │   │   │               │   ├── CreateScheduledPaymentRequest.java
+│   │   │   │               │   ├── CreateSplitPaymentRequest.java
+│   │   │   │               │   ├── PauseScheduledPaymentRequest.java
+│   │   │   │               │   ├── PaymentRequestResponse.java
+│   │   │   │               │   ├── PaySplitShareRequest.java
+│   │   │   │               │   ├── ResumeScheduledPaymentRequest.java
+│   │   │   │               │   ├── ScheduledPaymentExecutionResponse.java
+│   │   │   │               │   ├── ScheduledPaymentResponse.java
+│   │   │   │               │   ├── SplitPaymentParticipantRequest.java
+│   │   │   │               │   ├── SplitPaymentParticipantResponse.java
+│   │   │   │               │   ├── SplitPaymentResponse.java
+│   │   │   │               │   ├── SplitPaymentStatisticsResponse.java
+│   │   │   │               │   ├── UpdateParticipantAmountRequest.java
+│   │   │   │               │   └── UpdateScheduledPaymentRequest.java
+│   │   │   │               ├── PaymentServiceApplication.java
+│   │   │   │               ├── repository
+│   │   │   │               │   ├── PaymentRequestRepository.java
+│   │   │   │               │   ├── ScheduledPaymentRepository.java
+│   │   │   │               │   ├── SplitPaymentParticipantRepository.java
+│   │   │   │               │   └── SplitPaymentRepository.java
+│   │   │   │               └── service
+│   │   │   │                   ├── PaymentRequestService.java
+│   │   │   │                   ├── PaymentService.java
+│   │   │   │                   ├── ScheduledPaymentService.java
+│   │   │   │                   └── SplitPaymentService.java
+│   │   │   └── resources
+│   │   │       ├── application.yml
+│   │   │       └── db
+│   │   │           └── migration
+│   │   │               └── V1__create_payment_tables.sql
+│   │   └── test
+│   │       ├── java
+│   │       │   └── com
+│   │       │       └── p2pfinance
+│   │       │           └── payment
+│   │       │               ├── config
+│   │       │               │   ├── KafkaTestConfig.java
+│   │       │               │   ├── TestConfig.java
+│   │       │               │   └── TestSecurityConfig.java
+│   │       │               ├── PaymentServiceE2ETest.java
+│   │       │               └── service
+│   │       │                   ├── PaymentRequestServiceTest.java
+│   │       │                   ├── PaymentServiceIntegrationTest.java
+│   │       │                   └── SplitPaymentServiceTest.java
+│   │       └── resources
+│   │           └── application-test.yml
+│   └── target
+│       ├── classes
+│       │   ├── application.yml
+│       │   ├── com
+│       │   │   └── p2pfinance
+│       │   │       └── payment
+│       │   │           ├── api
+│       │   │           │   ├── GlobalExceptionHandler$ErrorResponse$ErrorResponseBuilder.class
+│       │   │           │   ├── GlobalExceptionHandler$ErrorResponse.class
+│       │   │           │   ├── GlobalExceptionHandler$ValidationErrorResponse.class
+│       │   │           │   ├── GlobalExceptionHandler.class
+│       │   │           │   ├── PaymentRequestController.class
+│       │   │           │   ├── ScheduledPaymentController.class
+│       │   │           │   └── SplitPaymentController.class
+│       │   │           ├── client
+│       │   │           │   ├── dto
+│       │   │           │   │   ├── TransferRequest$TransferRequestBuilder.class
+│       │   │           │   │   ├── TransferRequest.class
+│       │   │           │   │   ├── TransferResponse$TransferResponseBuilder.class
+│       │   │           │   │   ├── TransferResponse.class
+│       │   │           │   │   ├── UserProfileResponse$UserProfileResponseBuilder.class
+│       │   │           │   │   ├── UserProfileResponse.class
+│       │   │           │   │   ├── UserResponse$UserResponseBuilder.class
+│       │   │           │   │   ├── UserResponse.class
+│       │   │           │   │   ├── WalletResponse$WalletResponseBuilder.class
+│       │   │           │   │   └── WalletResponse.class
+│       │   │           │   ├── UserServiceClient.class
+│       │   │           │   └── WalletServiceClient.class
+│       │   │           ├── domain
+│       │   │           │   ├── InvalidPaymentOperationException.class
+│       │   │           │   ├── InvalidPaymentStatusException.class
+│       │   │           │   ├── PaymentFailedException.class
+│       │   │           │   ├── PaymentLimitExceededException.class
+│       │   │           │   ├── PaymentRequest.class
+│       │   │           │   ├── PaymentRequestNotFoundException.class
+│       │   │           │   ├── PaymentRequestStatus.class
+│       │   │           │   ├── ScheduledPayment$1.class
+│       │   │           │   ├── ScheduledPayment.class
+│       │   │           │   ├── ScheduledPaymentExecution.class
+│       │   │           │   ├── ScheduledPaymentExecutionStatus.class
+│       │   │           │   ├── ScheduledPaymentFrequency.class
+│       │   │           │   ├── ScheduledPaymentNotFoundException.class
+│       │   │           │   ├── ScheduledPaymentStatus.class
+│       │   │           │   ├── SplitPayment.class
+│       │   │           │   ├── SplitPaymentNotFoundException.class
+│       │   │           │   ├── SplitPaymentParticipant.class
+│       │   │           │   └── SplitPaymentStatus.class
+│       │   │           ├── dto
+│       │   │           │   ├── AddParticipantRequest$AddParticipantRequestBuilder.class
+│       │   │           │   ├── AddParticipantRequest.class
+│       │   │           │   ├── ApprovePaymentRequestRequest$ApprovePaymentRequestRequestBuilder.class
+│       │   │           │   ├── ApprovePaymentRequestRequest.class
+│       │   │           │   ├── CancelPaymentRequestRequest$CancelPaymentRequestRequestBuilder.class
+│       │   │           │   ├── CancelPaymentRequestRequest.class
+│       │   │           │   ├── CancelScheduledPaymentRequest$CancelScheduledPaymentRequestBuilder.class
+│       │   │           │   ├── CancelScheduledPaymentRequest.class
+│       │   │           │   ├── CreatePaymentRequestRequest$CreatePaymentRequestRequestBuilder.class
+│       │   │           │   ├── CreatePaymentRequestRequest.class
+│       │   │           │   ├── CreateScheduledPaymentRequest$CreateScheduledPaymentRequestBuilder.class
+│       │   │           │   ├── CreateScheduledPaymentRequest.class
+│       │   │           │   ├── CreateSplitPaymentRequest$CreateSplitPaymentRequestBuilder.class
+│       │   │           │   ├── CreateSplitPaymentRequest.class
+│       │   │           │   ├── PauseScheduledPaymentRequest$PauseScheduledPaymentRequestBuilder.class
+│       │   │           │   ├── PauseScheduledPaymentRequest.class
+│       │   │           │   ├── PaymentRequestResponse$PaymentRequestResponseBuilder.class
+│       │   │           │   ├── PaymentRequestResponse.class
+│       │   │           │   ├── PaySplitShareRequest$PaySplitShareRequestBuilder.class
+│       │   │           │   ├── PaySplitShareRequest.class
+│       │   │           │   ├── ResumeScheduledPaymentRequest$ResumeScheduledPaymentRequestBuilder.class
+│       │   │           │   ├── ResumeScheduledPaymentRequest.class
+│       │   │           │   ├── ScheduledPaymentExecutionResponse$ScheduledPaymentExecutionResponseBuilder.class
+│       │   │           │   ├── ScheduledPaymentExecutionResponse.class
+│       │   │           │   ├── ScheduledPaymentResponse$ScheduledPaymentResponseBuilder.class
+│       │   │           │   ├── ScheduledPaymentResponse.class
+│       │   │           │   ├── SplitPaymentParticipantRequest$SplitPaymentParticipantRequestBuilder.class
+│       │   │           │   ├── SplitPaymentParticipantRequest.class
+│       │   │           │   ├── SplitPaymentParticipantResponse$SplitPaymentParticipantResponseBuilder.class
+│       │   │           │   ├── SplitPaymentParticipantResponse.class
+│       │   │           │   ├── SplitPaymentResponse$SplitPaymentResponseBuilder.class
+│       │   │           │   ├── SplitPaymentResponse.class
+│       │   │           │   ├── SplitPaymentStatisticsResponse$SplitPaymentStatisticsResponseBuilder.class
+│       │   │           │   ├── SplitPaymentStatisticsResponse.class
+│       │   │           │   ├── UpdateParticipantAmountRequest$UpdateParticipantAmountRequestBuilder.class
+│       │   │           │   ├── UpdateParticipantAmountRequest.class
+│       │   │           │   ├── UpdateScheduledPaymentRequest$UpdateScheduledPaymentRequestBuilder.class
+│       │   │           │   └── UpdateScheduledPaymentRequest.class
+│       │   │           ├── PaymentServiceApplication.class
+│       │   │           ├── repository
+│       │   │           │   ├── PaymentRequestRepository.class
+│       │   │           │   ├── ScheduledPaymentRepository.class
+│       │   │           │   ├── SplitPaymentParticipantRepository.class
+│       │   │           │   └── SplitPaymentRepository.class
+│       │   │           └── service
+│       │   │               ├── PaymentRequestService$InvalidWalletStateException.class
+│       │   │               ├── PaymentRequestService$ResourceNotFoundException.class
+│       │   │               ├── PaymentRequestService$ServiceCommunicationException.class
+│       │   │               ├── PaymentRequestService$ServiceUnavailableException.class
+│       │   │               ├── PaymentRequestService$UnauthorizedAccessException.class
+│       │   │               ├── PaymentRequestService.class
+│       │   │               ├── PaymentService$InsufficientFundsException.class
+│       │   │               ├── PaymentService$InvalidWalletStateException.class
+│       │   │               ├── PaymentService$ResourceNotFoundException.class
+│       │   │               ├── PaymentService$ServiceCommunicationException.class
+│       │   │               ├── PaymentService$ServiceUnavailableException.class
+│       │   │               ├── PaymentService$UnauthorizedAccessException.class
+│       │   │               ├── PaymentService.class
+│       │   │               ├── ScheduledPaymentService.class
+│       │   │               └── SplitPaymentService.class
+│       │   └── db
+│       │       └── migration
+│       │           └── V1__create_payment_tables.sql
+│       ├── failsafe-reports
+│       │   ├── 2025-03-19T20-08-33_917-jvmRun1.dump
+│       │   ├── 2025-03-19T20-08-33_917-jvmRun1.dumpstream
+│       │   ├── com.p2pfinance.payment.PaymentServiceE2ETest.txt
+│       │   ├── com.p2pfinance.payment.service.PaymentServiceIntegrationTest.txt
+│       │   ├── failsafe-summary.xml
+│       │   ├── TEST-com.p2pfinance.payment.PaymentServiceE2ETest.xml
+│       │   └── TEST-com.p2pfinance.payment.service.PaymentServiceIntegrationTest.xml
+│       ├── generated-sources
+│       │   └── annotations
+│       ├── generated-test-sources
+│       │   └── test-annotations
+│       ├── maven-archiver
+│       │   └── pom.properties
+│       ├── maven-status
+│       │   └── maven-compiler-plugin
+│       │       ├── compile
+│       │       │   └── default-compile
+│       │       │       ├── createdFiles.lst
+│       │       │       └── inputFiles.lst
+│       │       └── testCompile
+│       │           └── default-testCompile
+│       │               ├── createdFiles.lst
+│       │               └── inputFiles.lst
+│       ├── payment-service-0.1.0-SNAPSHOT.jar
+│       ├── surefire-reports
+│       │   ├── com.p2pfinance.payment.service.PaymentRequestServiceTest.txt
+│       │   ├── com.p2pfinance.payment.service.SplitPaymentServiceTest.txt
+│       │   ├── TEST-com.p2pfinance.payment.service.PaymentRequestServiceTest.xml
+│       │   └── TEST-com.p2pfinance.payment.service.SplitPaymentServiceTest.xml
+│       └── test-classes
+│           ├── application-test.yml
+│           └── com
+│               └── p2pfinance
+│                   └── payment
+│                       ├── config
+│                       │   ├── KafkaTestConfig.class
+│                       │   ├── TestConfig.class
+│                       │   └── TestSecurityConfig.class
+│                       ├── PaymentServiceE2ETest.class
+│                       └── service
+│                           ├── PaymentRequestServiceTest.class
+│                           ├── PaymentServiceIntegrationTest.class
+│                           └── SplitPaymentServiceTest.class
+├── pom.xml
+├── READMECODEX.md
+├── READMEjava.md
+├── README.md
+├── READMEsomecode.md
+├── READMEsomecodes.md
+├── READMEsql.md
+├── READMEXicanjava.txt
+├── READMEXicanyml.txt
+├── READMEX.txt
+├── READMEyaml.md
+├── run-goose.sh
+├── run-tests.sh
+├── scripts
+│   └── load-tests
+│       └── WalletServiceLoadTest.jmx
+├── sqlfiles.txt
+├── target
+│   └── failsafe-reports
+│       └── failsafe-summary.xml
+├── testing-strategy.md
+├── tree.md
+├── trees.md
+├── treess.md
+├── trimmed-code.md
+├── user-service
+│   ├── Dockerfile
+│   ├── logs
+│   │   └── user-service.log
+│   ├── pom.xml
+│   ├── src
+│   │   ├── main
+│   │   │   ├── java
+│   │   │   │   └── com
+│   │   │   │       └── p2pfinance
+│   │   │   │           └── user
+│   │   │   │               ├── api
+│   │   │   │               │   ├── AuthController.java
+│   │   │   │               │   ├── GlobalExceptionHandler.java
+│   │   │   │               │   ├── OAuth2Controller.java
+│   │   │   │               │   └── UserController.java
+│   │   │   │               ├── client
+│   │   │   │               │   ├── dto
+│   │   │   │               │   │   ├── CreateUserRequest.java
+│   │   │   │               │   │   ├── CreateUserResponse.java
+│   │   │   │               │   │   ├── UpdateUserRequest.java
+│   │   │   │               │   │   ├── UpdateUserResponse.java
+│   │   │   │               │   │   ├── UpdateUserStatusRequest.java
+│   │   │   │               │   │   └── UpdateUserStatusResponse.java
+│   │   │   │               │   └── IntegrationServiceClient.java
+│   │   │   │               ├── config
+│   │   │   │               │   ├── OAuth2SecurityConfig.java
+│   │   │   │               │   ├── SecurityConfig.java
+│   │   │   │               │   └── SecurityConfigOld.java
+│   │   │   │               ├── domain
+│   │   │   │               │   ├── AuthenticationFailedException.java
+│   │   │   │               │   ├── InvalidUserStateException.java
+│   │   │   │               │   ├── InvalidVerificationTokenException.java
+│   │   │   │               │   ├── KycStatus.java
+│   │   │   │               │   ├── KycVerificationFailedException.java
+│   │   │   │               │   ├── UserAlreadyExistsException.java
+│   │   │   │               │   ├── UserExceptions.java
+│   │   │   │               │   ├── User.java
+│   │   │   │               │   ├── UserNotFoundException.java
+│   │   │   │               │   ├── UserProfile.java
+│   │   │   │               │   ├── UserStatus.java
+│   │   │   │               │   ├── VerificationToken.java
+│   │   │   │               │   └── VerificationType.java
+│   │   │   │               ├── dto
+│   │   │   │               │   ├── AuthenticationRequest.java
+│   │   │   │               │   ├── AuthenticationResponse.java
+│   │   │   │               │   ├── PasswordChangeRequest.java
+│   │   │   │               │   ├── PasswordResetInitiationRequest.java
+│   │   │   │               │   ├── PasswordResetRequest.java
+│   │   │   │               │   ├── TokenRefreshRequest.java
+│   │   │   │               │   ├── TokenVerificationRequest.java
+│   │   │   │               │   ├── UpdateProfileRequest.java
+│   │   │   │               │   ├── UserProfileResponse.java
+│   │   │   │               │   ├── UserRegistrationRequest.java
+│   │   │   │               │   └── UserResponse.java
+│   │   │   │               ├── exception
+│   │   │   │               ├── repository
+│   │   │   │               │   ├── UserProfileRepository.java
+│   │   │   │               │   ├── UserRepository.java
+│   │   │   │               │   └── VerificationTokenRepository.java
+│   │   │   │               ├── security
+│   │   │   │               │   ├── CustomUserDetailsService.java
+│   │   │   │               │   ├── JwtAuthenticationFilter.java
+│   │   │   │               │   └── JwtTokenProvider.java
+│   │   │   │               ├── service
+│   │   │   │               │   ├── AuthService.java
+│   │   │   │               │   ├── OAuth2Service.java
+│   │   │   │               │   └── UserService.java
+│   │   │   │               └── UserServiceApplication.java
+│   │   │   └── resources
+│   │   │       ├── application.yml
+│   │   │       └── db
+│   │   │           └── migration
+│   │   │               └── V1__create_user_tables.sql
+│   │   └── test
+│   │       ├── java
+│   │       │   └── com
+│   │       │       └── p2pfinance
+│   │       │           └── user
+│   │       │               ├── security
+│   │       │               │   └── SecurityTest.java
+│   │       │               └── service
+│   │       │                   └── UserServiceTest.java
+│   │       └── resources
+│   │           └── application-test.yml
+│   └── target
+│       ├── classes
+│       │   ├── application.yml
+│       │   ├── com
+│       │   │   └── p2pfinance
+│       │   │       └── user
+│       │   │           ├── api
+│       │   │           │   ├── AuthController.class
+│       │   │           │   ├── GlobalExceptionHandler$ErrorResponse$ErrorResponseBuilder.class
+│       │   │           │   ├── GlobalExceptionHandler$ErrorResponse.class
+│       │   │           │   ├── GlobalExceptionHandler$ValidationErrorResponse.class
+│       │   │           │   ├── GlobalExceptionHandler.class
+│       │   │           │   ├── OAuth2Controller.class
+│       │   │           │   └── UserController.class
+│       │   │           ├── client
+│       │   │           │   ├── dto
+│       │   │           │   │   ├── CreateUserRequest$CreateUserRequestBuilder.class
+│       │   │           │   │   ├── CreateUserRequest.class
+│       │   │           │   │   ├── CreateUserResponse$CreateUserResponseBuilder.class
+│       │   │           │   │   ├── CreateUserResponse.class
+│       │   │           │   │   ├── UpdateUserRequest$UpdateUserRequestBuilder.class
+│       │   │           │   │   ├── UpdateUserRequest.class
+│       │   │           │   │   ├── UpdateUserResponse$UpdateUserResponseBuilder.class
+│       │   │           │   │   ├── UpdateUserResponse.class
+│       │   │           │   │   ├── UpdateUserStatusRequest$UpdateUserStatusRequestBuilder.class
+│       │   │           │   │   ├── UpdateUserStatusRequest.class
+│       │   │           │   │   ├── UpdateUserStatusResponse$UpdateUserStatusResponseBuilder.class
+│       │   │           │   │   └── UpdateUserStatusResponse.class
+│       │   │           │   └── IntegrationServiceClient.class
+│       │   │           ├── config
+│       │   │           │   ├── OAuth2SecurityConfig.class
+│       │   │           │   ├── SecurityConfig.class
+│       │   │           │   └── SecurityConfigOld.class
+│       │   │           ├── domain
+│       │   │           │   ├── AuthenticationFailedException.class
+│       │   │           │   ├── InvalidUserStateException.class
+│       │   │           │   ├── InvalidVerificationTokenException.class
+│       │   │           │   ├── KycStatus.class
+│       │   │           │   ├── KycVerificationFailedException.class
+│       │   │           │   ├── UserAlreadyExistsException.class
+│       │   │           │   ├── User.class
+│       │   │           │   ├── UserNotFoundException.class
+│       │   │           │   ├── UserProfile.class
+│       │   │           │   ├── UserStatus.class
+│       │   │           │   ├── VerificationToken.class
+│       │   │           │   └── VerificationType.class
+│       │   │           ├── dto
+│       │   │           │   ├── AuthenticationRequest$AuthenticationRequestBuilder.class
+│       │   │           │   ├── AuthenticationRequest.class
+│       │   │           │   ├── AuthenticationResponse$AuthenticationResponseBuilder.class
+│       │   │           │   ├── AuthenticationResponse.class
+│       │   │           │   ├── PasswordChangeRequest$PasswordChangeRequestBuilder.class
+│       │   │           │   ├── PasswordChangeRequest.class
+│       │   │           │   ├── PasswordResetInitiationRequest$PasswordResetInitiationRequestBuilder.class
+│       │   │           │   ├── PasswordResetInitiationRequest.class
+│       │   │           │   ├── PasswordResetRequest$PasswordResetRequestBuilder.class
+│       │   │           │   ├── PasswordResetRequest.class
+│       │   │           │   ├── TokenRefreshRequest$TokenRefreshRequestBuilder.class
+│       │   │           │   ├── TokenRefreshRequest.class
+│       │   │           │   ├── TokenVerificationRequest$TokenVerificationRequestBuilder.class
+│       │   │           │   ├── TokenVerificationRequest.class
+│       │   │           │   ├── UpdateProfileRequest$UpdateProfileRequestBuilder.class
+│       │   │           │   ├── UpdateProfileRequest.class
+│       │   │           │   ├── UserProfileResponse$UserProfileResponseBuilder.class
+│       │   │           │   ├── UserProfileResponse.class
+│       │   │           │   ├── UserRegistrationRequest$UserRegistrationRequestBuilder.class
+│       │   │           │   ├── UserRegistrationRequest.class
+│       │   │           │   ├── UserResponse$UserResponseBuilder.class
+│       │   │           │   └── UserResponse.class
+│       │   │           ├── repository
+│       │   │           │   ├── UserProfileRepository.class
+│       │   │           │   ├── UserRepository.class
+│       │   │           │   └── VerificationTokenRepository.class
+│       │   │           ├── security
+│       │   │           │   ├── CustomUserDetailsService.class
+│       │   │           │   ├── JwtAuthenticationFilter.class
+│       │   │           │   └── JwtTokenProvider.class
+│       │   │           ├── service
+│       │   │           │   ├── AuthService.class
+│       │   │           │   ├── OAuth2Service.class
+│       │   │           │   ├── UserService$1.class
+│       │   │           │   └── UserService.class
+│       │   │           └── UserServiceApplication.class
+│       │   └── db
+│       │       └── migration
+│       │           └── V1__create_user_tables.sql
+│       ├── generated-sources
+│       │   └── annotations
+│       ├── generated-test-sources
+│       │   └── test-annotations
+│       ├── maven-archiver
+│       │   └── pom.properties
+│       ├── maven-status
+│       │   └── maven-compiler-plugin
+│       │       ├── compile
+│       │       │   └── default-compile
+│       │       │       ├── createdFiles.lst
+│       │       │       └── inputFiles.lst
+│       │       └── testCompile
+│       │           └── default-testCompile
+│       │               ├── createdFiles.lst
+│       │               └── inputFiles.lst
+│       ├── surefire-reports
+│       │   ├── com.p2pfinance.user.service.UserServiceTest.txt
+│       │   └── TEST-com.p2pfinance.user.service.UserServiceTest.xml
+│       ├── test-classes
+│       │   ├── application-test.yml
+│       │   └── com
+│       │       └── p2pfinance
+│       │           └── user
+│       │               ├── security
+│       │               │   └── SecurityTest.class
+│       │               └── service
+│       │                   └── UserServiceTest.class
+│       └── user-service-0.1.0-SNAPSHOT.jar
+└── wallet-service
+    ├── Dockerfile
+    ├── logs
+    │   ├── wallet-service.log
+    │   └── wallet-service.log.2025-03-16.0.gz
+    ├── pom.xml
+    ├── src
+    │   ├── main
+    │   │   ├── java
+    │   │   │   └── com
+    │   │   │       └── p2pfinance
+    │   │   │           └── wallet
+    │   │   │               ├── api
+    │   │   │               │   ├── CurrencyController.java
+    │   │   │               │   ├── GlobalExceptionHandler.java
+    │   │   │               │   └── WalletController.java
+    │   │   │               ├── client
+    │   │   │               │   ├── dto
+    │   │   │               │   │   ├── CreateWalletRequest.java
+    │   │   │               │   │   ├── CreateWalletResponse.java
+    │   │   │               │   │   ├── DepositRequest.java
+    │   │   │               │   │   ├── DepositResponse.java
+    │   │   │               │   │   ├── GetBalanceRequest.java
+    │   │   │               │   │   ├── GetBalanceResponse.java
+    │   │   │               │   │   ├── TransferRequest.java
+    │   │   │               │   │   ├── TransferResponse.java
+    │   │   │               │   │   ├── WithdrawalRequest.java
+    │   │   │               │   │   └── WithdrawalResponse.java
+    │   │   │               │   └── IntegrationServiceClient.java
+    │   │   │               ├── config
+    │   │   │               ├── domain
+    │   │   │               │   ├── ConcurrentModificationException.java
+    │   │   │               │   ├── InsufficientBalanceException.java
+    │   │   │               │   ├── TransactionFailedException.java
+    │   │   │               │   ├── Transaction.java
+    │   │   │               │   ├── TransactionStatus.java
+    │   │   │               │   ├── TransactionType.java
+    │   │   │               │   ├── Wallet.java
+    │   │   │               │   ├── WalletNotActiveException.java
+    │   │   │               │   ├── WalletNotFoundException.java
+    │   │   │               │   └── WalletStatus.java
+    │   │   │               ├── dto
+    │   │   │               │   ├── CreateWalletRequest.java
+    │   │   │               │   ├── CurrencyConversionRequest.java
+    │   │   │               │   ├── CurrencyConversionResponse.java
+    │   │   │               │   ├── DepositRequest.java
+    │   │   │               │   ├── TransactionResponse.java
+    │   │   │               │   ├── TransferRequest.java
+    │   │   │               │   ├── WalletResponse.java
+    │   │   │               │   └── WithdrawalRequest.java
+    │   │   │               ├── event
+    │   │   │               │   ├── TransactionCompletedEvent.java
+    │   │   │               │   └── WalletCreatedEvent.java
+    │   │   │               ├── exception
+    │   │   │               ├── repository
+    │   │   │               │   ├── TransactionRepository.java
+    │   │   │               │   └── WalletRepository.java
+    │   │   │               ├── service
+    │   │   │               │   ├── CurrencyConversionService.java
+    │   │   │               │   ├── FeignIntegrationService.java
+    │   │   │               │   ├── IntegrationService.java
+    │   │   │               │   ├── TransactionLogger.java
+    │   │   │               │   └── WalletService.java
+    │   │   │               └── WalletServiceApplication.java
+    │   │   └── resources
+    │   │       ├── application.yml
+    │   │       └── db
+    │   │           └── migration
+    │   │               └── V1__create_wallet_tables.sql
+    │   └── test
+    │       ├── java
+    │       │   └── com
+    │       │       └── p2pfinance
+    │       │           └── wallet
+    │       │               ├── config
+    │       │               │   ├── TestConfig.java
+    │       │               │   └── TestConfigOld.java
+    │       │               └── service
+    │       │                   ├── WalletServiceIntegrationTest.java
+    │       │                   ├── WalletServiceIntegrationTestOld.java
+    │       │                   └── WalletServiceTest.java
+    │       └── resources
+    │           ├── application-test-old.yml
+    │           └── application-test.yml
+    └── target
+        ├── classes
+        │   ├── application.yml
+        │   ├── com
+        │   │   └── p2pfinance
+        │   │       └── wallet
+        │   │           ├── api
+        │   │           │   ├── CurrencyController.class
+        │   │           │   ├── GlobalExceptionHandler$ErrorResponse$ErrorResponseBuilder.class
+        │   │           │   ├── GlobalExceptionHandler$ErrorResponse.class
+        │   │           │   ├── GlobalExceptionHandler.class
+        │   │           │   └── WalletController.class
+        │   │           ├── client
+        │   │           │   ├── dto
+        │   │           │   │   ├── CreateWalletRequest$CreateWalletRequestBuilder.class
+        │   │           │   │   ├── CreateWalletRequest.class
+        │   │           │   │   ├── CreateWalletResponse$CreateWalletResponseBuilder.class
+        │   │           │   │   ├── CreateWalletResponse.class
+        │   │           │   │   ├── DepositRequest$DepositRequestBuilder.class
+        │   │           │   │   ├── DepositRequest.class
+        │   │           │   │   ├── DepositResponse$DepositResponseBuilder.class
+        │   │           │   │   ├── DepositResponse.class
+        │   │           │   │   ├── GetBalanceRequest$GetBalanceRequestBuilder.class
+        │   │           │   │   ├── GetBalanceRequest.class
+        │   │           │   │   ├── GetBalanceResponse$GetBalanceResponseBuilder.class
+        │   │           │   │   ├── GetBalanceResponse.class
+        │   │           │   │   ├── TransferRequest$TransferRequestBuilder.class
+        │   │           │   │   ├── TransferRequest.class
+        │   │           │   │   ├── TransferResponse$TransferResponseBuilder.class
+        │   │           │   │   ├── TransferResponse.class
+        │   │           │   │   ├── WithdrawalRequest$WithdrawalRequestBuilder.class
+        │   │           │   │   ├── WithdrawalRequest.class
+        │   │           │   │   ├── WithdrawalResponse$WithdrawalResponseBuilder.class
+        │   │           │   │   └── WithdrawalResponse.class
+        │   │           │   └── IntegrationServiceClient.class
+        │   │           ├── domain
+        │   │           │   ├── ConcurrentModificationException.class
+        │   │           │   ├── InsufficientBalanceException.class
+        │   │           │   ├── Transaction.class
+        │   │           │   ├── TransactionFailedException.class
+        │   │           │   ├── TransactionStatus.class
+        │   │           │   ├── TransactionType.class
+        │   │           │   ├── Wallet.class
+        │   │           │   ├── WalletNotActiveException.class
+        │   │           │   ├── WalletNotFoundException.class
+        │   │           │   └── WalletStatus.class
+        │   │           ├── dto
+        │   │           │   ├── CreateWalletRequest$CreateWalletRequestBuilder.class
+        │   │           │   ├── CreateWalletRequest.class
+        │   │           │   ├── CurrencyConversionRequest$CurrencyConversionRequestBuilder.class
+        │   │           │   ├── CurrencyConversionRequest.class
+        │   │           │   ├── CurrencyConversionResponse$CurrencyConversionResponseBuilder.class
+        │   │           │   ├── CurrencyConversionResponse.class
+        │   │           │   ├── DepositRequest$DepositRequestBuilder.class
+        │   │           │   ├── DepositRequest.class
+        │   │           │   ├── TransactionResponse$TransactionResponseBuilder.class
+        │   │           │   ├── TransactionResponse.class
+        │   │           │   ├── TransferRequest$TransferRequestBuilder.class
+        │   │           │   ├── TransferRequest.class
+        │   │           │   ├── WalletResponse$WalletResponseBuilder.class
+        │   │           │   ├── WalletResponse.class
+        │   │           │   ├── WithdrawalRequest$WithdrawalRequestBuilder.class
+        │   │           │   └── WithdrawalRequest.class
+        │   │           ├── event
+        │   │           │   ├── TransactionCompletedEvent.class
+        │   │           │   └── WalletCreatedEvent.class
+        │   │           ├── repository
+        │   │           │   ├── TransactionRepository.class
+        │   │           │   └── WalletRepository.class
+        │   │           ├── service
+        │   │           │   ├── CurrencyConversionService$CurrencyConversionException.class
+        │   │           │   ├── CurrencyConversionService$ExchangeRateResponse.class
+        │   │           │   ├── CurrencyConversionService.class
+        │   │           │   ├── FeignIntegrationService.class
+        │   │           │   ├── IntegrationService.class
+        │   │           │   ├── TransactionLogger.class
+        │   │           │   └── WalletService.class
+        │   │           └── WalletServiceApplication.class
+        │   └── db
+        │       └── migration
+        │           └── V1__create_wallet_tables.sql
+        ├── failsafe-reports
+        │   ├── 2025-03-17T19-14-01_087-jvmRun1.dump
+        │   ├── 2025-03-17T19-14-01_087-jvmRun1.dumpstream
+        │   ├── com.p2pfinance.wallet.service.WalletServiceIntegrationTest.txt
+        │   ├── failsafe-summary.xml
+        │   └── TEST-com.p2pfinance.wallet.service.WalletServiceIntegrationTest.xml
+        ├── generated-sources
+        │   └── annotations
+        ├── generated-test-sources
+        │   └── test-annotations
+        ├── maven-archiver
+        │   └── pom.properties
+        ├── maven-status
+        │   └── maven-compiler-plugin
+        │       ├── compile
+        │       │   └── default-compile
+        │       │       ├── createdFiles.lst
+        │       │       └── inputFiles.lst
+        │       └── testCompile
+        │           └── default-testCompile
+        │               ├── createdFiles.lst
+        │               └── inputFiles.lst
+        ├── surefire-reports
+        │   ├── 2025-03-17T19-31-11_692-jvmRun1.dump
+        │   ├── 2025-03-17T19-31-11_692-jvmRun1.dumpstream
+        │   ├── com.p2pfinance.wallet.service.WalletServiceIntegrationTest.txt
+        │   ├── com.p2pfinance.wallet.service.WalletServiceTest.txt
+        │   ├── TEST-com.p2pfinance.wallet.service.WalletServiceIntegrationTest.xml
+        │   └── TEST-com.p2pfinance.wallet.service.WalletServiceTest.xml
+        ├── test-classes
+        │   ├── application-test-old.yml
+        │   ├── application-test.yml
+        │   └── com
+        │       └── p2pfinance
+        │           └── wallet
+        │               ├── config
+        │               │   ├── TestConfig.class
+        │               │   └── TestConfigOld.class
+        │               └── service
+        │                   ├── WalletServiceIntegrationTest.class
+        │                   ├── WalletServiceIntegrationTestOld.class
+        │                   └── WalletServiceTest.class
+        └── wallet-service-0.1.0-SNAPSHOT.jar

@@ -35,6 +35,7 @@
         <dependency>
             <groupId>org.apache.fineract</groupId>
             <artifactId>fineract-client</artifactId>
+            <version>1.11.0</version>
         </dependency>
         <!-- Cyclos Integration -->
         <dependency>

@@ -30,6 +30,11 @@ public class NotificationEventListener {
             // Determine the event type
             NotificationEvent baseEvent = objectMapper.readValue(message, NotificationEvent.class);
 
+            if (baseEvent == null || baseEvent.getEventType() == null) {
+                log.warn("Invalid user event with null event type: {}", message);
+                return;
+            }
+
             switch (baseEvent.getEventType()) {
                 case "USER_REGISTERED" -> handleUserRegisteredEvent(message);
                 case "USER_VERIFIED" -> handleUserVerifiedEvent(message);
@@ -42,8 +47,16 @@ public class NotificationEventListener {
 
     private void handleUserRegisteredEvent(String message) throws Exception {
         UserRegisteredEvent event = objectMapper.readValue(message, UserRegisteredEvent.class);
-        // Initialize the event type since we removed the custom constructor
-        event.initializeEventType();
+
+        if (event == null || event.getUserId() == null) {
+            log.warn("Invalid user registered event: {}", message);
+            return;
+        }
+
+        // Initialize the event type if needed
+        if (event.getEventType() == null) {
+            event.setEventType("USER_REGISTERED");
+        }
 
         log.info("Received user registered event for user: {}", event.getUserId());
 
@@ -62,8 +75,16 @@ public class NotificationEventListener {
 
     private void handleUserVerifiedEvent(String message) throws Exception {
         UserVerifiedEvent event = objectMapper.readValue(message, UserVerifiedEvent.class);
-        // Initialize the event type since we removed the custom constructor
-        event.initializeEventType();
+
+        if (event == null || event.getUserId() == null) {
+            log.warn("Invalid user verified event: {}", message);
+            return;
+        }
+
+        // Initialize the event type if needed
+        if (event.getEventType() == null) {
+            event.setEventType("USER_VERIFIED");
+        }
 
         log.info("Received user verified event for user: {}", event.getUserId());
 
@@ -87,6 +108,11 @@ public class NotificationEventListener {
             // Determine the event type
             NotificationEvent baseEvent = objectMapper.readValue(message, NotificationEvent.class);
 
+            if (baseEvent == null || baseEvent.getEventType() == null) {
+                log.warn("Unknown wallet event type: null");
+                return;
+            }
+
             if ("WALLET_TRANSACTION".equals(baseEvent.getEventType())) {
                 handleWalletTransactionEvent(message);
             } else {
@@ -99,10 +125,20 @@ public class NotificationEventListener {
 
     private void handleWalletTransactionEvent(String message) throws Exception {
         WalletTransactionEvent event = objectMapper.readValue(message, WalletTransactionEvent.class);
-        // Initialize event type if needed (assuming WalletTransactionEvent has a
-        // similar structure)
+
+        if (event == null || event.getUserId() == null) {
+            log.warn("Invalid wallet transaction event: {}", message);
+            return;
+        }
+
+        // Initialize event type if needed
         if (event.getEventType() == null) {
             event.setEventType("WALLET_TRANSACTION");
+        }
+
+        if (event.getTransactionType() == null) {
+            log.warn("Wallet transaction event missing transaction type: {}", message);
+            return;
         }
 
         log.info("Received wallet transaction event for user: {}, type: {}",
@@ -132,7 +168,7 @@ public class NotificationEventListener {
                 .userId(event.getUserId())
                 .templateCode(templateCode)
                 .parameters(params)
-                .referenceId(event.getTransactionId().toString())
+                .referenceId(event.getTransactionId() != null ? event.getTransactionId().toString() : null)
                 .build();
 
         notificationService.sendNotification(request);
@@ -146,6 +182,11 @@ public class NotificationEventListener {
             // Determine the event type
             NotificationEvent baseEvent = objectMapper.readValue(message, NotificationEvent.class);
 
+            if (baseEvent == null || baseEvent.getEventType() == null) {
+                log.warn("Unknown payment request event type: null");
+                return;
+            }
+
             if ("PAYMENT_REQUEST".equals(baseEvent.getEventType())) {
                 handlePaymentRequestEvent(message);
             } else {
@@ -158,9 +199,20 @@ public class NotificationEventListener {
 
     private void handlePaymentRequestEvent(String message) throws Exception {
         PaymentRequestEvent event = objectMapper.readValue(message, PaymentRequestEvent.class);
+
+        if (event == null || event.getUserId() == null) {
+            log.warn("Invalid payment request event: {}", message);
+            return;
+        }
+
         // Initialize event type if needed
         if (event.getEventType() == null) {
             event.setEventType("PAYMENT_REQUEST");
+        }
+
+        if (event.getStatus() == null) {
+            log.warn("Payment request event missing status: {}", message);
+            return;
         }
 
         log.info("Received payment request event for user: {}, status: {}",
@@ -195,7 +247,7 @@ public class NotificationEventListener {
                 .userId(event.getUserId())
                 .templateCode(templateCode)
                 .parameters(params)
-                .referenceId(event.getRequestId().toString())
+                .referenceId(event.getRequestId() != null ? event.getRequestId().toString() : null)
                 .build();
 
         notificationService.sendNotification(request);
@@ -209,6 +261,11 @@ public class NotificationEventListener {
             // Determine the event type
             NotificationEvent baseEvent = objectMapper.readValue(message, NotificationEvent.class);
 
+            if (baseEvent == null || baseEvent.getEventType() == null) {
+                log.warn("Unknown scheduled payment event type: null");
+                return;
+            }
+
             if ("SCHEDULED_PAYMENT".equals(baseEvent.getEventType())) {
                 handleScheduledPaymentEvent(message);
             } else {
@@ -221,9 +278,20 @@ public class NotificationEventListener {
 
     private void handleScheduledPaymentEvent(String message) throws Exception {
         ScheduledPaymentEvent event = objectMapper.readValue(message, ScheduledPaymentEvent.class);
+
+        if (event == null || event.getUserId() == null) {
+            log.warn("Invalid scheduled payment event: {}", message);
+            return;
+        }
+
         // Initialize event type if needed
         if (event.getEventType() == null) {
             event.setEventType("SCHEDULED_PAYMENT");
+        }
+
+        if (event.getStatus() == null) {
+            log.warn("Scheduled payment event missing status: {}", message);
+            return;
         }
 
         log.info("Received scheduled payment event for user: {}, status: {}",
@@ -262,7 +330,7 @@ public class NotificationEventListener {
                 .userId(event.getUserId())
                 .templateCode(templateCode)
                 .parameters(params)
-                .referenceId(event.getPaymentId().toString())
+                .referenceId(event.getPaymentId() != null ? event.getPaymentId().toString() : null)
                 .build();
 
         notificationService.sendNotification(request);
@@ -276,6 +344,11 @@ public class NotificationEventListener {
             // Determine the event type
             NotificationEvent baseEvent = objectMapper.readValue(message, NotificationEvent.class);
 
+            if (baseEvent == null || baseEvent.getEventType() == null) {
+                log.warn("Unknown split payment event type: null");
+                return;
+            }
+
             if ("SPLIT_PAYMENT".equals(baseEvent.getEventType())) {
                 handleSplitPaymentEvent(message);
             } else {
@@ -288,9 +361,20 @@ public class NotificationEventListener {
 
     private void handleSplitPaymentEvent(String message) throws Exception {
         SplitPaymentEvent event = objectMapper.readValue(message, SplitPaymentEvent.class);
+
+        if (event == null || event.getUserId() == null) {
+            log.warn("Invalid split payment event: {}", message);
+            return;
+        }
+
         // Initialize event type if needed
         if (event.getEventType() == null) {
             event.setEventType("SPLIT_PAYMENT");
+        }
+
+        if (event.getStatus() == null) {
+            log.warn("Split payment event missing status: {}", message);
+            return;
         }
 
         log.info("Received split payment event for user: {}, status: {}",
@@ -330,7 +414,7 @@ public class NotificationEventListener {
                 .userId(event.getUserId())
                 .templateCode(templateCode)
                 .parameters(params)
-                .referenceId(event.getPaymentId().toString())
+                .referenceId(event.getPaymentId() != null ? event.getPaymentId().toString() : null)
                 .build();
 
         notificationService.sendNotification(request);
@@ -344,6 +428,11 @@ public class NotificationEventListener {
             // Determine the event type
             NotificationEvent baseEvent = objectMapper.readValue(message, NotificationEvent.class);
 
+            if (baseEvent == null || baseEvent.getEventType() == null) {
+                log.warn("Unknown security event type: null");
+                return;
+            }
+
             if ("SECURITY".equals(baseEvent.getEventType())) {
                 handleSecurityEvent(message);
             } else {
@@ -356,9 +445,20 @@ public class NotificationEventListener {
 
     private void handleSecurityEvent(String message) throws Exception {
         SecurityEvent event = objectMapper.readValue(message, SecurityEvent.class);
+
+        if (event == null || event.getUserId() == null) {
+            log.warn("Invalid security event: {}", message);
+            return;
+        }
+
         // Initialize event type if needed
         if (event.getEventType() == null) {
             event.setEventType("SECURITY");
+        }
+
+        if (event.getSecurityEventType() == null) {
+            log.warn("Security event missing security event type: {}", message);
+            return;
         }
 
         log.info("Received security event for user: {}, type: {}",
@@ -377,7 +477,9 @@ public class NotificationEventListener {
         }
 
         Map<String, Object> params = new HashMap<>();
-        params.put("eventTime", event.getEventTime());
+        if (event.getEventTime() != null) {
+            params.put("eventTime", event.getEventTime());
+        }
 
         if (event.getIpAddress() != null) {
             params.put("ipAddress", event.getIpAddress());

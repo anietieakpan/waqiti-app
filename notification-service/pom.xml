@@ -88,7 +88,7 @@
             <artifactId>flyway-core</artifactId>
         </dependency>
 
-        <!-- Firebase Admin SDK -->
+        <!-- Firebase Admin SDK - using property reference -->
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
@@ -134,14 +134,12 @@
             <scope>test</scope>
         </dependency>
 
-
         <!-- Jakarta Mail API - needed for javax.mail.internet (Java EE -> Jakarta EE transition) -->
         <dependency>
             <groupId>jakarta.mail</groupId>
             <artifactId>jakarta.mail-api</artifactId>
             <version>2.1.2</version>
         </dependency>
-
 
         <!-- Testcontainers dependencies -->
         <dependency>
@@ -150,15 +148,12 @@
             <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.google.firebase</groupId>
-            <artifactId>firebase-admin</artifactId>
-            <version>9.2.0</version> <!-- or latest version -->
-        </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.3.1</version> <!-- Use a version compatible with your project -->
+            <version>5.3.1</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.p2pfinance.notification.dto.NotificationListResponse;
 import com.p2pfinance.notification.dto.NotificationResponse;
 import com.p2pfinance.notification.dto.SendNotificationRequest;
+import com.p2pfinance.notification.repository.NotificationPreferencesRepository;
+import com.p2pfinance.notification.repository.NotificationRepository;
+import com.p2pfinance.notification.repository.NotificationTemplateRepository;
 import com.p2pfinance.notification.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -14,12 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
@@ -27,12 +29,22 @@ import java.util.*;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(NotificationController.class)
+@WebMvcTest(controllers = NotificationController.class)
+@TestPropertySource(properties = {
+        "spring.cloud.config.enabled=false",
+        "spring.cloud.discovery.enabled=false",
+        "spring.config.import=optional:configserver:",
+        "eureka.client.enabled=false",
+        "spring.main.allow-bean-definition-overriding=true",
+        "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration," +
+                "org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration"
+})
+@ActiveProfiles("test")
 @Tag("UnitTest")
 class NotificationControllerTest {
 
@@ -44,6 +56,16 @@ class NotificationControllerTest {
 
     @MockBean
     private NotificationService notificationService;
+
+    // Mock all repositories to prevent JPA initialization
+    @MockBean
+    private NotificationRepository notificationRepository;
+
+    @MockBean
+    private NotificationPreferencesRepository preferencesRepository;
+
+    @MockBean
+    private NotificationTemplateRepository templateRepository;
 
     private UUID userId;
     private UUID notificationId;

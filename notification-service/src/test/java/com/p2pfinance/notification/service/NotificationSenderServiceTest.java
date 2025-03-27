@@ -1,9 +1,7 @@
-/**
- * File: src/test/java/com/p2pfinance/notification/service/NotificationSenderServiceTest.java
- */
 package com.p2pfinance.notification.service;
 
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.p2pfinance.notification.domain.Notification;
 import com.p2pfinance.notification.domain.NotificationPreferences;
@@ -14,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -38,8 +37,8 @@ class NotificationSenderServiceTest {
     @Mock
     private MimeMessage mimeMessage;
 
-    // Use a concrete test class instead of mocking FirebaseMessaging
-    private TestFirebaseMessaging testFirebaseMessaging;
+    @Mock
+    private FirebaseMessaging firebaseMessaging;
 
     private NotificationSenderService senderService;
 
@@ -48,13 +47,11 @@ class NotificationSenderServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Create a simple class to replace FirebaseMessaging
-        testFirebaseMessaging = spy(new TestFirebaseMessaging());
-
+        // Create service with direct dependency injection
         senderService = new NotificationSenderService(
                 preferencesRepository,
                 mailSender,
-                null // Initially set to null - we'll use reflection to inject our test class
+                firebaseMessaging
         );
 
         userId = UUID.randomUUID();
@@ -67,29 +64,6 @@ class NotificationSenderServiceTest {
         );
         notification.setReferenceId("ref-123");
         notification.setActionUrl("/test/action");
-
-        // Use reflection to replace FirebaseMessaging with our test implementation
-        try {
-            java.lang.reflect.Field field = NotificationSenderService.class.getDeclaredField("firebaseMessaging");
-            field.setAccessible(true);
-            field.set(senderService, testFirebaseMessaging);
-        } catch (Exception e) {
-            System.err.println("Failed to set test FirebaseMessaging: " + e.getMessage());
-        }
-    }
-
-    // Simple class that we'll use instead of FirebaseMessaging
-    static class TestFirebaseMessaging {
-        private Message lastMessage;
-
-        public String send(Message message) {
-            this.lastMessage = message;
-            return "test-message-id-" + System.currentTimeMillis();
-        }
-
-        public Message getLastMessage() {
-            return lastMessage;
-        }
     }
 
     @Test
@@ -146,56 +120,37 @@ class NotificationSenderServiceTest {
     }
 
     @Test
-    void sendSmsNotification_ShouldReturnFalse_WhenNoPhoneNumber() {
-        // Given
-        NotificationPreferences preferences = NotificationPreferences.createDefault(userId);
-        // No phone number set
-
-        when(preferencesRepository.findById(userId)).thenReturn(Optional.of(preferences));
-
-        // When
-        boolean result = senderService.sendSmsNotification(notification, "Test SMS");
-
-        // Then
-        assertThat(result).isFalse();
-    }
-
-    @Test
-    void sendSmsNotification_ShouldReturnTrue_WhenPhoneNumberExists() {
-        // Given
-        NotificationPreferences preferences = NotificationPreferences.createDefault(userId);
-        preferences.updateContactInfo(null, "+1234567890", null);
-
-        when(preferencesRepository.findById(userId)).thenReturn(Optional.of(preferences));
-
-        // When
-        boolean result = senderService.sendSmsNotification(notification, "Test SMS");
-
-        // Then
-        assertThat(result).isTrue();
-        // We can't verify actual SMS sending since it's mocked/simulated
-    }
-
-    @Test
-    void sendPushNotification_ShouldSendPushNotification_WhenDeviceTokenExists() {
+    void sendPushNotification_ShouldSendPushNotification_WhenDeviceTokenExists() throws FirebaseMessagingException {
         // Given
         String deviceToken = "test-device-token";
         NotificationPreferences preferences = NotificationPreferences.createDefault(userId);
+
+        // Explicitly enable push notifications and set device token
+        preferences.setPushNotificationsEnabled(true);
         preferences.updateContactInfo(null, null, deviceToken);
 
         when(preferencesRepository.findById(userId)).thenReturn(Optional.of(preferences));
+
+        // Capture the message for verification
+        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+
+        // Ensure the FirebaseMessaging mock returns a message ID
+        when(firebaseMessaging.send(messageCaptor.capture())).thenReturn("message-id-123");
 
         // When
         boolean result = senderService.sendPushNotification(notification);
 
         // Then
         assertThat(result).isTrue();
-        // Verify the message was captured by our test implementation
-        assertThat(testFirebaseMessaging.getLastMessage()).isNotNull();
+
+        // Verify the captured message
+        Message sentMessage = messageCaptor.getValue();
+        assertThat(sentMessage).isNotNull();
+        verify(firebaseMessaging).send(any(Message.class));
     }
 
     @Test
-    void sendPushNotification_ShouldReturnFalse_WhenNoDeviceToken() {
+    void sendPushNotification_ShouldReturnFalse_WhenNoDeviceToken() throws FirebaseMessagingException {
         // Given
         NotificationPreferences preferences = NotificationPreferences.createDefault(userId);
         // No device token set
@@ -207,19 +162,22 @@ class NotificationSenderServiceTest {
 
         // Then
         assertThat(result).isFalse();
+        verify(firebaseMessaging, never()).send(any(Message.class));
     }
 
     @Test
-    void sendPushNotification_ShouldReturnFalse_WhenFirebaseThrowsException() {
+    void sendPushNotification_ShouldReturnFalse_WhenFirebaseThrowsException() throws FirebaseMessagingException {
         // Given
         String deviceToken = "test-device-token";
         NotificationPreferences preferences = NotificationPreferences.createDefault(userId);
+        preferences.setPushNotificationsEnabled(true);
         preferences.updateContactInfo(null, null, deviceToken);
 
         when(preferencesRepository.findById(userId)).thenReturn(Optional.of(preferences));
 
-        // Make our test implementation throw an exception
-        doThrow(new RuntimeException("Test Firebase error")).when(testFirebaseMessaging).send(any());
+        // Simulate FirebaseMessagingException
+        when(firebaseMessaging.send(any(Message.class)))
+                .thenThrow(mock(FirebaseMessagingException.class));
 
         // When
         boolean result = senderService.sendPushNotification(notification);
@@ -229,23 +187,31 @@ class NotificationSenderServiceTest {
     }
 
     @Test
-    void sendPushNotification_ShouldReturnFalse_WhenFirebaseIsNull() {
+    void sendSmsNotification_ShouldReturnTrue_WhenPhoneNumberExists() {
         // Given
-        String deviceToken = "test-device-token";
         NotificationPreferences preferences = NotificationPreferences.createDefault(userId);
-        preferences.updateContactInfo(null, null, deviceToken);
+        preferences.setSmsNotificationsEnabled(true);
+        preferences.updateContactInfo(null, "+1234567890", null);
 
         when(preferencesRepository.findById(userId)).thenReturn(Optional.of(preferences));
 
-        // Create a new service with null Firebase
-        NotificationSenderService serviceWithNullFirebase = new NotificationSenderService(
-                preferencesRepository,
-                mailSender,
-                null
-        );
+        // When
+        boolean result = senderService.sendSmsNotification(notification, "Test SMS");
+
+        // Then
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void sendSmsNotification_ShouldReturnFalse_WhenNoPhoneNumber() {
+        // Given
+        NotificationPreferences preferences = NotificationPreferences.createDefault(userId);
+        // No phone number set
+
+        when(preferencesRepository.findById(userId)).thenReturn(Optional.of(preferences));
 
         // When
-        boolean result = serviceWithNullFirebase.sendPushNotification(notification);
+        boolean result = senderService.sendSmsNotification(notification, "Test SMS");
 
         // Then
         assertThat(result).isFalse();
@@ -272,6 +238,7 @@ class NotificationSenderServiceTest {
     void sendSmsNotification_ShouldUseNotificationMessage_WhenSmsTextIsNull() {
         // Given
         NotificationPreferences preferences = NotificationPreferences.createDefault(userId);
+        preferences.setSmsNotificationsEnabled(true);
         preferences.updateContactInfo(null, "+1234567890", null);
 
         when(preferencesRepository.findById(userId)).thenReturn(Optional.of(preferences));

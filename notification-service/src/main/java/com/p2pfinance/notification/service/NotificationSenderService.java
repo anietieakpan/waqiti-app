@@ -5,66 +5,91 @@ package com.p2pfinance.notification.service;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import com.p2pfinance.notification.domain.Notification;
 import com.p2pfinance.notification.domain.NotificationPreferences;
 import com.p2pfinance.notification.repository.NotificationPreferencesRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-// Changed from javax.mail to jakarta.mail
 import jakarta.mail.internet.MimeMessage;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class NotificationSenderService {
     private final NotificationPreferencesRepository preferencesRepository;
     private final JavaMailSender mailSender;
-    private final FirebaseMessaging firebaseMessaging;
+
+    // Not final anymore to allow for testing
+    private FirebaseMessaging firebaseMessaging;
+
+    @Autowired
+    public NotificationSenderService(
+            NotificationPreferencesRepository preferencesRepository,
+            JavaMailSender mailSender,
+            @Nullable FirebaseMessaging firebaseMessaging) {
+        this.preferencesRepository = preferencesRepository;
+        this.mailSender = mailSender;
+        this.firebaseMessaging = firebaseMessaging;
+    }
+
+    /**
+     * Setter for Firebase messaging - allows for testing with mocks
+     * This method is package-private for testing purposes but not meant for general use
+     */
+    /* package */ void setFirebaseMessaging(FirebaseMessaging firebaseMessaging) {
+        this.firebaseMessaging = firebaseMessaging;
+    }
 
     /**
      * Sends an email notification
      */
     public boolean sendEmailNotification(Notification notification, String subject, String body) {
-        log.info("Sending email notification: {}", notification.getId());
+        log.info("Attempting to send email notification for notification ID: {}",
+                notification.getId() != null ? notification.getId() : "N/A");
 
-        // Get user's email from preferences
+        // Fetch user preferences
         NotificationPreferences preferences = preferencesRepository.findById(notification.getUserId())
                 .orElse(null);
 
-        if (preferences == null || preferences.getEmail() == null || preferences.getEmail().isEmpty()) {
+        // Validate preferences and email settings
+        if (preferences == null || !preferences.isEmailNotificationsEnabled()) {
+            log.warn("Email notifications disabled or no preferences found for user: {}",
+                    notification.getUserId());
+            return false;
+        }
+
+        // Validate email address
+        if (preferences.getEmail() == null || preferences.getEmail().isEmpty()) {
             log.warn("No email address found for user: {}", notification.getUserId());
             return false;
         }
 
         try {
             // If subject or body is null, use title/message from notification
-            if (subject == null) {
-                subject = notification.getTitle();
-            }
-
-            if (body == null) {
-                body = notification.getMessage();
-            }
+            String finalSubject = subject != null ? subject : notification.getTitle();
+            String finalBody = body != null ? body : notification.getMessage();
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(preferences.getEmail());
-            helper.setSubject(subject);
-            helper.setText(body, true); // true = HTML content
+            helper.setSubject(finalSubject);
+            helper.setText(finalBody, true); // true = HTML content
 
             mailSender.send(message);
 
             log.info("Email notification sent successfully: {}", notification.getId());
             return true;
         } catch (Exception e) {
-            log.error("Error sending email notification: {}", notification.getId(), e);
+            log.error("Error sending email notification: {}. Error: {}",
+                    notification.getId(), e.getMessage(), e);
             return false;
         }
     }
@@ -73,22 +98,29 @@ public class NotificationSenderService {
      * Sends an SMS notification
      */
     public boolean sendSmsNotification(Notification notification, String smsText) {
-        log.info("Sending SMS notification: {}", notification.getId());
+        log.info("Attempting to send SMS notification for notification ID: {}",
+                notification.getId() != null ? notification.getId() : "N/A");
 
-        // Get user's phone number from preferences
+        // Fetch user preferences
         NotificationPreferences preferences = preferencesRepository.findById(notification.getUserId())
                 .orElse(null);
 
-        if (preferences == null || preferences.getPhoneNumber() == null || preferences.getPhoneNumber().isEmpty()) {
+        // Validate preferences and SMS settings
+        if (preferences == null || !preferences.isSmsNotificationsEnabled()) {
+            log.warn("SMS notifications disabled or no preferences found for user: {}",
+                    notification.getUserId());
+            return false;
+        }
+
+        // Validate phone number
+        if (preferences.getPhoneNumber() == null || preferences.getPhoneNumber().isEmpty()) {
             log.warn("No phone number found for user: {}", notification.getUserId());
             return false;
         }
 
         try {
             // If smsText is null, use message from notification
-            if (smsText == null) {
-                smsText = notification.getMessage();
-            }
+            String finalSmsText = smsText != null ? smsText : notification.getMessage();
 
             // TODO: Implement actual SMS service integration
             // For example, using Twilio:
@@ -96,15 +128,14 @@ public class NotificationSenderService {
             // Message message = Message.creator(
             //     new PhoneNumber(preferences.getPhoneNumber()),
             //     new PhoneNumber(FROM_NUMBER),
-            //     smsText)
+            //     finalSmsText)
             // .create();
 
             log.info("SMS notification sent successfully: {}", notification.getId());
-
-            // Simulate success for now
             return true;
         } catch (Exception e) {
-            log.error("Error sending SMS notification: {}", notification.getId(), e);
+            log.error("Error sending SMS notification: {}. Error: {}",
+                    notification.getId(), e.getMessage(), e);
             return false;
         }
     }
@@ -113,58 +144,95 @@ public class NotificationSenderService {
      * Sends a push notification
      */
     public boolean sendPushNotification(Notification notification) {
-        log.info("Sending push notification: {}", notification.getId());
+        log.info("Attempting to send push notification for notification ID: {}",
+                notification.getId() != null ? notification.getId() : "N/A");
 
-        // Get user's device token from preferences
+        // Fetch user preferences
         NotificationPreferences preferences = preferencesRepository.findById(notification.getUserId())
                 .orElse(null);
 
-        if (preferences == null || preferences.getDeviceToken() == null || preferences.getDeviceToken().isEmpty()) {
+        // Validate preferences and push notification settings
+        if (preferences == null) {
+            log.warn("No preferences found for user: {}", notification.getUserId());
+            return false;
+        }
+
+        // Check if push notifications are enabled for this user
+        if (!preferences.isPushNotificationsEnabled()) {
+            log.info("Push notifications disabled for user: {}", notification.getUserId());
+            return false;
+        }
+
+        // Validate device token
+        if (preferences.getDeviceToken() == null || preferences.getDeviceToken().isEmpty()) {
             log.warn("No device token found for user: {}", notification.getUserId());
             return false;
         }
 
-        // If Firebase is not initialized, log and return false
+        // Validate Firebase messaging
         if (firebaseMessaging == null) {
-            log.warn("Firebase Messaging is not initialized. Push notification not sent.");
+            log.error("Firebase Messaging is not initialized. Push notification cannot be sent.");
             return false;
         }
 
         try {
-            // Create data payload
-            Map<String, String> data = new HashMap<>();
-            data.put("notificationId", notification.getId().toString());
-            data.put("title", notification.getTitle());
-            data.put("body", notification.getMessage());
-            data.put("type", notification.getType().toString());
-            data.put("category", notification.getCategory());
+            // Prepare notification data
+            Map<String, String> data = prepareNotificationData(notification);
 
-            if (notification.getReferenceId() != null) {
-                data.put("referenceId", notification.getReferenceId());
-            }
-
-            if (notification.getActionUrl() != null) {
-                data.put("actionUrl", notification.getActionUrl());
-            }
-
-            // Create Firebase message, using the fully qualified name for Notification
-            Message message = Message.builder()
-                    .setToken(preferences.getDeviceToken())
-                    .setNotification(com.google.firebase.messaging.Notification.builder()
-                            .setTitle(notification.getTitle())
-                            .setBody(notification.getMessage())
-                            .build())
-                    .putAllData(data)
-                    .build();
+            // Create Firebase message
+            Message message = buildFirebaseMessage(preferences.getDeviceToken(), notification, data);
 
             // Send message
-            firebaseMessaging.send(message);
+            String messageId = firebaseMessaging.send(message);
 
-            log.info("Push notification sent successfully: {}", notification.getId());
+            log.info("Push notification sent successfully. Message ID: {}, Notification ID: {}",
+                    messageId, notification.getId());
             return true;
+        } catch (FirebaseMessagingException e) {
+            log.error("Firebase Messaging error when sending push notification for notification ID: {}. Error: {}",
+                    notification.getId(), e.getMessage(), e);
+            return false;
         } catch (Exception e) {
-            log.error("Error sending push notification: {}", notification.getId(), e);
+            log.error("Unexpected error when sending push notification for notification ID: {}. Error: {}",
+                    notification.getId(), e.getMessage(), e);
             return false;
         }
+    }
+
+    /**
+     * Prepares notification data for Firebase message
+     */
+    private Map<String, String> prepareNotificationData(Notification notification) {
+        Map<String, String> data = new HashMap<>();
+        data.put("notificationId",
+                notification.getId() != null ? notification.getId().toString() : "");
+        data.put("title", notification.getTitle());
+        data.put("body", notification.getMessage());
+        data.put("type", notification.getType().toString());
+        data.put("category", notification.getCategory());
+
+        if (notification.getReferenceId() != null) {
+            data.put("referenceId", notification.getReferenceId());
+        }
+
+        if (notification.getActionUrl() != null) {
+            data.put("actionUrl", notification.getActionUrl());
+        }
+
+        return data;
+    }
+
+    /**
+     * Builds Firebase message with given device token, notification, and data
+     */
+    private Message buildFirebaseMessage(String deviceToken, Notification notification, Map<String, String> data) {
+        return Message.builder()
+                .setToken(deviceToken)
+                .setNotification(com.google.firebase.messaging.Notification.builder()
+                        .setTitle(notification.getTitle())
+                        .setBody(notification.getMessage())
+                        .build())
+                .putAllData(data)
+                .build();
     }
 }

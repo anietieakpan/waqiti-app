@@ -1,3 +1,6 @@
+/**
+ * File: src/main/java/com/p2pfinance/notification/service/NotificationService.java
+ */
 package com.p2pfinance.notification.service;
 
 import com.p2pfinance.notification.domain.*;
@@ -14,13 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import java.util.Map;
-
 
 @Service
 @RequiredArgsConstructor
@@ -62,20 +60,37 @@ public class NotificationService {
         }
 
         // Create and send notifications for each type
-        List<Notification> notifications = typesToSend.stream()
-                .map(type -> createAndSendNotification(
-                        request.getUserId(),
-                        title,
-                        message,
-                        type,
-                        template.getCategory(),
-                        request.getReferenceId(),
-                        request.getActionUrl(),
-                        request.getExpiresAt(),
-                        template,
-                        request.getParameters()
-                ))
-                .collect(Collectors.toList());
+        List<Notification> notifications = new ArrayList<>();
+
+        for (NotificationType type : typesToSend) {
+            // Create the notification
+            Notification notification = Notification.create(
+                    request.getUserId(), title, message, type, template.getCategory());
+
+            if (request.getReferenceId() != null) {
+                notification.setReferenceId(request.getReferenceId());
+            }
+
+            if (request.getActionUrl() != null) {
+                notification.setActionUrl(request.getActionUrl());
+            } else if (template.getActionUrlTemplate() != null) {
+                String renderedActionUrl = templateService.renderTemplate(
+                        template.getActionUrlTemplate(), request.getParameters());
+                notification.setActionUrl(renderedActionUrl);
+            }
+
+            if (request.getExpiresAt() != null) {
+                notification.setExpiryDate(request.getExpiresAt());
+            }
+
+            // Save the initial notification to get an ID
+            notification = notificationRepository.save(notification);
+
+            // Process and send the notification
+            processNotification(notification, type, template, request.getParameters());
+
+            notifications.add(notification);
+        }
 
         return notifications.stream()
                 .map(this::mapToNotificationResponse)
@@ -83,63 +98,12 @@ public class NotificationService {
     }
 
     /**
-     * Determines which notification types to send based on user preferences
+     * Process and send a notification
      */
-    private List<NotificationType> determineNotificationTypes(UUID userId,
-                                                              String category,
-                                                              String[] requestedTypes) {
-        // If specific types are requested, use those (still check preferences)
-        if (requestedTypes != null && requestedTypes.length > 0) {
-            return Arrays.stream(requestedTypes)
-                    .map(type -> NotificationType.valueOf(type))
-                    .filter(type -> preferencesService.isNotificationEnabled(userId, category, type))
-                    .collect(Collectors.toList());
-        }
-
-        // Otherwise, determine based on user preferences
-        List<NotificationType> enabledTypes = List.of();
-
-        for (NotificationType type : NotificationType.values()) {
-            if (preferencesService.isNotificationEnabled(userId, category, type)) {
-                enabledTypes.add(type);
-            }
-        }
-
-        return enabledTypes;
-    }
-
-    /**
-     * Creates and sends a notification
-     */
-    private Notification createAndSendNotification(UUID userId, String title, String message,
-                                                   NotificationType type, String category,
-                                                   String referenceId, String actionUrl,
-                                                   LocalDateTime expiresAt, NotificationTemplate template,
-                                                   Map<String, Object> parameters) {
-        // Create the notification
-        Notification notification = Notification.create(
-                userId, title, message, type, category);
-
-        if (referenceId != null) {
-            notification.setReferenceId(referenceId);
-        }
-
-        if (actionUrl != null) {
-            notification.setActionUrl(actionUrl);
-        } else if (template.getActionUrlTemplate() != null) {
-            String renderedActionUrl = templateService.renderTemplate(
-                    template.getActionUrlTemplate(), parameters);
-            notification.setActionUrl(renderedActionUrl);
-        }
-
-        if (expiresAt != null) {
-            notification.setExpiryDate(expiresAt);
-        }
-
-        // Save the notification
-        notification = notificationRepository.save(notification);
-
-        // Send the notification
+    private void processNotification(Notification notification,
+                                     NotificationType type,
+                                     NotificationTemplate template,
+                                     Map<String, Object> parameters) {
         try {
             boolean sent = false;
 
@@ -167,8 +131,34 @@ public class NotificationService {
             notification.updateDeliveryStatus(
                     DeliveryStatus.FAILED, e.getMessage());
         }
+    }
 
-        return notificationRepository.save(notification);
+    /**
+     * Determines which notification types to send based on user preferences
+     * Made package-private for testability while maintaining encapsulation
+     */
+    /* package */ List<NotificationType> determineNotificationTypes(UUID userId,
+                                                                    String category,
+                                                                    String[] requestedTypes) {
+        // Use a mutable list instead of immutable List.of()
+        List<NotificationType> enabledTypes = new ArrayList<>();
+
+        // If specific types are requested, use those (still check preferences)
+        if (requestedTypes != null && requestedTypes.length > 0) {
+            return Arrays.stream(requestedTypes)
+                    .map(NotificationType::valueOf)
+                    .filter(type -> preferencesService.isNotificationEnabled(userId, category, type))
+                    .collect(Collectors.toList());
+        }
+
+        // Otherwise, determine based on user preferences
+        for (NotificationType type : NotificationType.values()) {
+            if (preferencesService.isNotificationEnabled(userId, category, type)) {
+                enabledTypes.add(type);
+            }
+        }
+
+        return enabledTypes;
     }
 
     /**
@@ -187,13 +177,17 @@ public class NotificationService {
                 .map(this::mapToNotificationResponse)
                 .collect(Collectors.toList());
 
+        // Handle unpaged Pageable safely
+        int pageNumber = pageable.isPaged() ? pageable.getPageNumber() : 0;
+        int pageSize = pageable.isPaged() ? pageable.getPageSize() : notifications.size();
+
         return NotificationListResponse.builder()
                 .notifications(notifications)
                 .unreadCount(unreadCount)
                 .totalPages(notificationsPage.getTotalPages())
                 .totalElements(notificationsPage.getTotalElements())
-                .page(pageable.getPageNumber())
-                .size(pageable.getPageSize())
+                .page(pageNumber)
+                .size(pageSize)
                 .build();
     }
 
@@ -213,13 +207,17 @@ public class NotificationService {
                 .map(this::mapToNotificationResponse)
                 .collect(Collectors.toList());
 
+        // Handle unpaged Pageable safely
+        int pageNumber = pageable.isPaged() ? pageable.getPageNumber() : 0;
+        int pageSize = pageable.isPaged() ? pageable.getPageSize() : notifications.size();
+
         return NotificationListResponse.builder()
                 .notifications(notifications)
                 .unreadCount(unreadCount)
                 .totalPages(notificationsPage.getTotalPages())
                 .totalElements(notificationsPage.getTotalElements())
-                .page(pageable.getPageNumber())
-                .size(pageable.getPageSize())
+                .page(pageNumber)
+                .size(pageSize)
                 .build();
     }
 

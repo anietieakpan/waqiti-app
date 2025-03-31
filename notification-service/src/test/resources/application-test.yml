@@ -5,6 +5,7 @@ spring:
   # Database configuration - will be dynamically set by TestcontainersBase
   datasource:
     driver-class-name: org.postgresql.Driver
+
   # JPA configuration
   jpa:
     hibernate:
@@ -14,12 +15,14 @@ spring:
         format_sql: true
         show_sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
   # Flyway configuration
   flyway:
     enabled: true
     locations: classpath:db/migration
     clean-disabled: false
     clean-on-validation-error: true
+
   # Kafka configuration - will be dynamically set by TestcontainersBase
   kafka:
     consumer:
@@ -33,9 +36,11 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     listener:
       ack-mode: MANUAL_IMMEDIATE
+
   # Firebase configuration (mocked in tests)
   firebase:
     config-file: firebase-test-config.json
+
   # Spring Cloud Config properties to disable config server for tests
   cloud:
     config:
@@ -43,18 +48,22 @@ spring:
       fail-fast: false
       discovery:
         enabled: false
+
   # Make Config Server import optional to prevent startup errors
   config:
     import: "optional:configserver:"
-  # Exclude auto-configuration for testing
-  autoconfigure:
-    exclude: >
-      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,
-      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,
-      org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+
   # Allow bean definition overriding
   main:
     allow-bean-definition-overriding: true
+
+  # IMPORTANT: Remove exclusions that were preventing JPA from working
+  # The problem was in this section - it was excluding JPA auto-configuration
+  # autoconfigure:
+  #   exclude: >
+  #     org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,
+  #     org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,
+  #     org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
 
 # Logging configuration
 logging:

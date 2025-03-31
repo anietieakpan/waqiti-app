@@ -28,7 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // Use real DB from Testcontainers
 @ActiveProfiles("test")
-@Tag("IntegrationTest")
+//@Tag("IntegrationTest")
 class NotificationRepositoryTest extends TestcontainersBase {
 
     @Autowired

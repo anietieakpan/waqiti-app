@@ -28,3 +28,6 @@ notification-service/treet.txt
 notification-service/.summary_files
 notification-service/logs
 notification-service/evatest.txt
+notification-service/eva*
+notification-service/logs/*
+notification-service/logs/notification-service.log

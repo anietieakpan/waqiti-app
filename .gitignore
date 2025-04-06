@@ -31,3 +31,6 @@ notification-service/evatest.txt
 notification-service/eva*
 notification-service/logs/*
 notification-service/logs/notification-service.log
+repomix-output.xml
+codesummary.md
+p2p-finance-app.llm

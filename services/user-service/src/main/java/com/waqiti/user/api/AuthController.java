@@ -2,6 +2,7 @@ package com.waqiti.user.api;
 
 import com.waqiti.user.dto.AuthenticationRequest;
 import com.waqiti.user.dto.AuthenticationResponse;
+import com.waqiti.user.dto.MfaVerifyRequest;
 import com.waqiti.user.dto.TokenRefreshRequest;
 import com.waqiti.user.service.AuthService;
 import jakarta.validation.Valid;
@@ -21,6 +22,14 @@ public class AuthController {
     public ResponseEntity<AuthenticationResponse> login(@Valid @RequestBody AuthenticationRequest request) {
         log.info("Authentication request received for user: {}", request.getUsernameOrEmail());
         return ResponseEntity.ok(authService.authenticate(request));
+    }
+
+    @PostMapping("/mfa/verify")
+    public ResponseEntity<AuthenticationResponse> verifyMfa(
+            @RequestHeader("X-MFA-Token") String mfaToken,
+            @Valid @RequestBody MfaVerifyRequest request) {
+        log.info("MFA verification request received with method: {}", request.getMethod());
+        return ResponseEntity.ok(authService.verifyMfa(mfaToken, request));
     }
 
     @PostMapping("/refresh")

@@ -86,7 +86,7 @@ notification:
     from: no-reply@waqiti.com
     personal: waqiti
   sms:
-    from: ${SMS_FROM:+12345678900}
+    from: ${SMS_FROM:+270785046229}
 
 # Resilience4j configuration
 resilience4j:
@@ -140,3 +140,12 @@ management:
   health:
     circuitbreakers:
       enabled: true
+
+# Add to services/notification-service/src/main/resources/application.yml
+
+# Twilio Configuration
+twilio:
+  enabled: ${TWILIO_ENABLED:false}
+  account:
+    sid: ${TWILIO_ACCOUNT_SID:}
+    token: ${TWILIO_AUTH_TOKEN:}

@@ -9,6 +9,7 @@ import com.google.firebase.messaging.FirebaseMessagingException;
 import com.waqiti.notification.domain.Notification;
 import com.waqiti.notification.domain.NotificationPreferences;
 import com.waqiti.notification.repository.NotificationPreferencesRepository;
+import com.waqiti.notification.service.provider.SmsProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -122,17 +123,21 @@ public class NotificationSenderService {
             // If smsText is null, use message from notification
             String finalSmsText = smsText != null ? smsText : notification.getMessage();
 
-            // TODO: Implement actual SMS service integration
-            // For example, using Twilio:
-            // Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
-            // Message message = Message.creator(
-            //     new PhoneNumber(preferences.getPhoneNumber()),
-            //     new PhoneNumber(FROM_NUMBER),
-            //     finalSmsText)
-            // .create();
+            // Send SMS through the provider
+            SmsProvider smsProvider = new SmsProvider();
+            String messageSid = smsProvider.sendSms(preferences.getPhoneNumber(), finalSmsText);
 
-            log.info("SMS notification sent successfully: {}", notification.getId());
-            return true;
+            // Check if the message was sent successfully
+            boolean success = messageSid != null;
+
+            if (success) {
+                log.info("SMS notification sent successfully: {}, SID: {}",
+                        notification.getId(), messageSid);
+            } else {
+                log.error("Failed to send SMS notification: {}", notification.getId());
+            }
+
+            return success;
         } catch (Exception e) {
             log.error("Error sending SMS notification: {}. Error: {}",
                     notification.getId(), e.getMessage(), e);

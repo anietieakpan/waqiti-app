@@ -75,6 +75,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Add to dependencies section in pom.xml -->
+        <dependency>
+            <groupId>dev.samstevens.totp</groupId>
+            <artifactId>totp</artifactId>
+            <version>1.7.1</version>
+        </dependency>
+
         <!-- Database -->
         <dependency>
             <groupId>org.postgresql</groupId>

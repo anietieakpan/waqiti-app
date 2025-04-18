@@ -5,7 +5,7 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_DB: p2p_finance
+      POSTGRES_DB: waqiti
       POSTGRES_USER: app_user
       POSTGRES_PASSWORD: ${DB_PASSWORD:-strongpassword}
     ports:
@@ -13,7 +13,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app_user -d p2p_finance"]
+      test: ["CMD-SHELL", "pg_isready -U app_user -d waqiti"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -174,7 +174,7 @@ services:
       - config-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/p2p_finance
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/waqiti
       SPRING_DATASOURCE_USERNAME: app_user
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-strongpassword}
@@ -207,7 +207,7 @@ services:
       - config-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/p2p_finance
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/waqiti
       SPRING_DATASOURCE_USERNAME: app_user
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-strongpassword}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -239,7 +239,7 @@ services:
       - wallet-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/p2p_finance
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/waqiti
       SPRING_DATASOURCE_USERNAME: app_user
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-strongpassword}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -273,7 +273,7 @@ services:
       - discovery-service
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/p2p_finance
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/waqiti
       SPRING_DATASOURCE_USERNAME: app_user
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-strongpassword}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -303,7 +303,7 @@ services:
       - cyclos
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/p2p_finance
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/waqiti
       SPRING_DATASOURCE_USERNAME: app_user
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-strongpassword}
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -323,7 +323,7 @@ services:
 
   discovery-service:
     build:
-      context: ./discovery-service
+      context: services/discovery-service
       dockerfile: Dockerfile
     container_name: discovery-service
     ports:
@@ -338,7 +338,7 @@ services:
 
   config-service:
     build:
-      context: ./config-service
+      context: services/config-service
       dockerfile: Dockerfile
     container_name: config-service
     ports:

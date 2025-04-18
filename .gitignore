@@ -14,7 +14,7 @@ target
 .summary_files
 *target*
 integration-service/target
-discovery-service/target
+services/discovery-service/target
 notification-service/target
 payment-service/target
 wallet-service/target

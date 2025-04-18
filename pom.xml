@@ -3,21 +3,23 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.p2pfinance</groupId>
-    <artifactId>p2p-finance-app</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <groupId>com.waqiti</groupId>
+    <artifactId>waqiti-app</artifactId>
+    <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>P2P Finance Application</name>
+    <name>Waqiti Application</name>
     <description>Peer-to-peer payment and e-wallet application</description>
 
     <modules>
-        <module>common</module>
-        <module>api-gateway</module>
-        <module>user-service</module>
-        <module>wallet-service</module>
-        <module>payment-service</module>
-        <module>integration-service</module>
-        <module>notification-service</module>
+        <module>services/common</module>
+        <module>services/api-gateway</module>
+        <module>services/user-service</module>
+        <module>services/wallet-service</module>
+        <module>services/payment-service</module>
+        <module>services/integration-service</module>
+        <module>services/notification-service</module>
+        <module>services/discovery-service</module>
+        <module>services/config-service</module>
     </modules>
 
     <properties>
@@ -30,7 +32,7 @@
         <fineract.version>1.8.2</fineract.version>
 
         <sonar.host.url>http://localhost:9000</sonar.host.url>
-        <sonar.projectKey>p2p-finance</sonar.projectKey>
+        <sonar.jectKey>waqiti</sonar.jectKey>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>

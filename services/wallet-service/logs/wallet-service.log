@@ -1,0 +1,632 @@
+2025-03-21 20:06:26.551 [main] INFO  c.p.w.s.WalletServiceIntegrationTest - Starting WalletServiceIntegrationTest using Java 17.0.14 with PID 790155 (started by aniix in /home/aniix/git/p2p-finance-app/wallet-service)
+2025-03-21 20:06:26.576 [main] DEBUG c.p.w.s.WalletServiceIntegrationTest - Running with Spring Boot v3.2.0, Spring v6.1.1
+2025-03-21 20:06:26.577 [main] INFO  c.p.w.s.WalletServiceIntegrationTest - The following 1 profile is active: "test"
+2025-03-21 20:06:28.919 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-03-21 20:06:28.919 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-03-21 20:06:29.168 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 235 ms. Found 2 JPA repository interfaces.
+2025-03-21 20:06:29.996 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-03-21 20:06:29.999 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-03-21 20:06:30.039 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface repository.com.waqiti.wallet.TransactionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-03-21 20:06:30.040 [main] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface repository.com.waqiti.wallet.WalletRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-03-21 20:06:30.040 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 27 ms. Found 0 Redis repository interfaces.
+2025-03-21 20:06:30.786 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=12b1071a-6820-32ad-adb2-db1b5377822d
+2025-03-21 20:06:34.237 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-03-21 20:06:34.364 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.3.1.Final
+2025-03-21 20:06:34.453 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-03-21 20:06:34.695 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-03-21 20:06:34.754 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-03-21 20:06:35.231 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@65e639f2
+2025-03-21 20:06:35.233 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-03-21 20:06:35.301 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-03-21 20:06:35.364 [main] DEBUG o.h.t.d.sql.spi.DdlTypeRegistry - addDescriptor(6, org.hibernate.type.descriptor.sql.internal.CapacityDependentDdlType@22599048) replaced previous registration(org.hibernate.type.descriptor.sql.internal.DdlTypeImpl@435a13ac)
+2025-03-21 20:06:37.021 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-03-21 20:06:37.058 [main] DEBUG org.hibernate.SQL - 
+    drop table if exists transactions cascade
+2025-03-21 20:06:37.069 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 00000
+2025-03-21 20:06:37.069 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - table "transactions" does not exist, skipping
+2025-03-21 20:06:37.070 [main] DEBUG org.hibernate.SQL - 
+    drop table if exists wallets cascade
+2025-03-21 20:06:37.074 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 00000
+2025-03-21 20:06:37.075 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - table "wallets" does not exist, skipping
+2025-03-21 20:06:37.090 [main] DEBUG org.hibernate.SQL - 
+    create table transactions (
+        amount numeric(19,4) not null,
+        currency varchar(3) not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        id uuid not null,
+        source_wallet_id uuid,
+        target_wallet_id uuid,
+        reference_id varchar(100),
+        description varchar(500),
+        created_by varchar(255),
+        external_id varchar(255) not null,
+        status varchar(255) not null check (status in ('PENDING','IN_PROGRESS','COMPLETED','FAILED')),
+        type varchar(255) not null check (type in ('DEPOSIT','WITHDRAWAL','TRANSFER','PAYMENT','REFUND','FEE')),
+        updated_by varchar(255),
+        primary key (id)
+    )
+2025-03-21 20:06:37.114 [main] DEBUG org.hibernate.SQL - 
+    create table wallets (
+        balance numeric(19,4) not null,
+        currency varchar(3) not null,
+        created_at timestamp(6) not null,
+        updated_at timestamp(6) not null,
+        version bigint,
+        id uuid not null,
+        user_id uuid not null,
+        account_type varchar(255) not null,
+        created_by varchar(255),
+        external_id varchar(255) not null,
+        status varchar(255) not null check (status in ('ACTIVE','FROZEN','CLOSED')),
+        updated_by varchar(255),
+        wallet_type varchar(255) not null,
+        primary key (id)
+    )
+2025-03-21 20:06:37.140 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-03-21 20:06:38.256 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-03-21 20:06:40.131 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-03-21 20:06:43.803 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 3 endpoint(s) beneath base path '/actuator'
+2025-03-21 20:06:43.865 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@7a6a4327, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@56290dd0, org.springframework.security.web.context.SecurityContextHolderFilter@1865249c, org.springframework.security.web.header.HeaderWriterFilter@29e77b41, org.springframework.web.filter.CorsFilter@1238c363, org.springframework.security.web.csrf.CsrfFilter@17969be6, org.springframework.security.web.authentication.logout.LogoutFilter@3344bc4, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@6ab1860, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@2e1777d4, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@53a75180, org.springframework.security.web.authentication.www.BasicAuthenticationFilter@205339e0, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@6830ddda, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@3aea0fc2, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@7bfc43a8, org.springframework.security.web.access.ExceptionTranslationFilter@9069115, org.springframework.security.web.access.intercept.AuthorizationFilter@1764625a]
+2025-03-21 20:06:44.681 [main] INFO  c.p.w.s.WalletServiceIntegrationTest - Started WalletServiceIntegrationTest in 19.261 seconds (process running for 27.701)
+2025-03-21 20:06:45.087 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: e563656d-3ed5-4e2a-88df-4c5284ef60b5, type: FINERACT, currency: USD
+2025-03-21 20:06:45.283 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:45.327 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: 369181b5-d9bc-45fc-ab7d-caa50e437e07, type: FINERACT, currency: USD
+2025-03-21 20:06:45.447 [main] DEBUG org.hibernate.SQL - 
+    insert 
+    into
+        wallets
+        (account_type, balance, created_at, created_by, currency, external_id, status, updated_at, updated_by, user_id, version, wallet_type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-03-21 20:06:45.481 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:45.495 [main] INFO  c.p.wallet.service.WalletService - Transferring 100.00 from wallet 83629785-6af1-455c-aa30-806ba77c96c8 to wallet 25ecf7bd-0b90-4c05-b2b3-a05436ae468b
+2025-03-21 20:06:45.524 [main] DEBUG org.hibernate.SQL - 
+    insert 
+    into
+        wallets
+        (account_type, balance, created_at, created_by, currency, external_id, status, updated_at, updated_by, user_id, version, wallet_type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-03-21 20:06:45.526 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.id=? for no key update
+2025-03-21 20:06:45.543 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.id=? for no key update
+2025-03-21 20:06:45.568 [main] DEBUG org.hibernate.SQL - 
+    select
+        t1_0.id,
+        t1_0.amount,
+        t1_0.created_at,
+        t1_0.created_by,
+        t1_0.currency,
+        t1_0.description,
+        t1_0.external_id,
+        t1_0.reference_id,
+        t1_0.source_wallet_id,
+        t1_0.status,
+        t1_0.target_wallet_id,
+        t1_0.type,
+        t1_0.updated_at,
+        t1_0.updated_by 
+    from
+        transactions t1_0 
+    where
+        t1_0.id=?
+2025-03-21 20:06:45.576 [main] ERROR c.p.wallet.service.WalletService - Transfer failed
+domain.com.waqiti.wallet.InsufficientBalanceException: Insufficient balance: 50.00 USD
+	at service.com.waqiti.wallet.WalletService.transfer(WalletService.java:197)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717)
+	at service.com.waqiti.wallet.WalletService$$SpringCGLIB$$0.transfer(<generated>)
+	at service.com.waqiti.wallet.WalletServiceIntegrationTest.lambda$testFailedTransferDueToInsufficientFunds$7(WalletServiceIntegrationTest.java:244)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:53)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
+	at service.com.waqiti.wallet.WalletServiceIntegrationTest.testFailedTransferDueToInsufficientFunds(WalletServiceIntegrationTest.java:243)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:728)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:60)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:131)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:156)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:147)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:103)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:93)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:106)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:64)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:45)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:37)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:92)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:86)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$7(TestMethodTestDescriptor.java:218)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:214)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:139)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:69)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:151)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47)
+	at org.apache.maven.surefire.junitplatform.LazyLauncher.execute(LazyLauncher.java:56)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:184)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:148)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:122)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+2025-03-21 20:06:45.741 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: 26dae575-44d5-463b-a84e-a1864d8215ec, type: FINERACT, currency: USD
+2025-03-21 20:06:45.748 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:45.758 [main] INFO  c.p.wallet.service.WalletService - Getting wallet: 3cb395c5-0214-4f44-9d98-a72d629f94b7
+2025-03-21 20:06:45.808 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: 485054cb-5119-4ee4-91fe-fb135786f187, type: FINERACT, currency: USD
+2025-03-21 20:06:45.822 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:45.829 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: 485054cb-5119-4ee4-91fe-fb135786f187, type: FINERACT, currency: EUR
+2025-03-21 20:06:45.836 [main] DEBUG org.hibernate.SQL - 
+    insert 
+    into
+        wallets
+        (account_type, balance, created_at, created_by, currency, external_id, status, updated_at, updated_by, user_id, version, wallet_type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-03-21 20:06:45.847 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:45.858 [main] INFO  c.p.wallet.service.WalletService - Getting wallets for user: 485054cb-5119-4ee4-91fe-fb135786f187
+2025-03-21 20:06:45.873 [main] DEBUG org.hibernate.SQL - 
+    insert 
+    into
+        wallets
+        (account_type, balance, created_at, created_by, currency, external_id, status, updated_at, updated_by, user_id, version, wallet_type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-03-21 20:06:45.879 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=?
+2025-03-21 20:06:45.924 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: f471fcbf-d888-4dc4-b638-3010e948a5f4, type: FINERACT, currency: USD
+2025-03-21 20:06:45.930 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:45.935 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: 460d5235-8dd4-4e23-b11d-cbf6e9fc5793, type: FINERACT, currency: USD
+2025-03-21 20:06:45.939 [main] DEBUG org.hibernate.SQL - 
+    insert 
+    into
+        wallets
+        (account_type, balance, created_at, created_by, currency, external_id, status, updated_at, updated_by, user_id, version, wallet_type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-03-21 20:06:45.944 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:45.952 [main] INFO  c.p.wallet.service.WalletService - Transferring 100.00 from wallet af187dbf-61af-49ac-86ce-93d795855ff3 to wallet 14a7a599-ed8a-415f-975a-095a25e13f51
+2025-03-21 20:06:45.957 [main] DEBUG org.hibernate.SQL - 
+    insert 
+    into
+        wallets
+        (account_type, balance, created_at, created_by, currency, external_id, status, updated_at, updated_by, user_id, version, wallet_type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-03-21 20:06:45.966 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.id=? for no key update
+2025-03-21 20:06:45.974 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.id=? for no key update
+2025-03-21 20:06:45.982 [main] DEBUG org.hibernate.SQL - 
+    select
+        t1_0.id,
+        t1_0.amount,
+        t1_0.created_at,
+        t1_0.created_by,
+        t1_0.currency,
+        t1_0.description,
+        t1_0.external_id,
+        t1_0.reference_id,
+        t1_0.source_wallet_id,
+        t1_0.status,
+        t1_0.target_wallet_id,
+        t1_0.type,
+        t1_0.updated_at,
+        t1_0.updated_by 
+    from
+        transactions t1_0 
+    where
+        t1_0.id=?
+2025-03-21 20:06:46.004 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: c374956f-c84a-4c35-8517-4a923f62e526, type: FINERACT, currency: USD
+2025-03-21 20:06:46.007 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:46.010 [main] INFO  c.p.wallet.service.WalletService - Freezing wallet: 8f2b1a92-7da5-4a30-8842-cea21d4ed73a
+2025-03-21 20:06:46.012 [main] INFO  c.p.wallet.service.WalletService - Creating new wallet for user: 06dc39a8-bb76-423b-bd6c-ea970283576c, type: FINERACT, currency: USD
+2025-03-21 20:06:46.020 [main] DEBUG org.hibernate.SQL - 
+    insert 
+    into
+        wallets
+        (account_type, balance, created_at, created_by, currency, external_id, status, updated_at, updated_by, user_id, version, wallet_type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-03-21 20:06:46.040 [main] DEBUG org.hibernate.SQL - 
+    update
+        wallets 
+    set
+        account_type=?,
+        balance=?,
+        created_at=?,
+        created_by=?,
+        currency=?,
+        external_id=?,
+        status=?,
+        updated_at=?,
+        updated_by=?,
+        user_id=?,
+        version=?,
+        wallet_type=? 
+    where
+        id=? 
+        and version=?
+2025-03-21 20:06:46.045 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.user_id=? 
+        and w1_0.currency=?
+2025-03-21 20:06:46.055 [main] INFO  c.p.wallet.service.WalletService - Transferring 10.00 from wallet 8f2b1a92-7da5-4a30-8842-cea21d4ed73a to wallet d9d51aa0-d59f-4e57-b9d3-f7337f9a0fad
+2025-03-21 20:06:46.061 [main] DEBUG org.hibernate.SQL - 
+    insert 
+    into
+        wallets
+        (account_type, balance, created_at, created_by, currency, external_id, status, updated_at, updated_by, user_id, version, wallet_type, id) 
+    values
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2025-03-21 20:06:46.069 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.id=? for no key update
+2025-03-21 20:06:46.076 [main] DEBUG org.hibernate.SQL - 
+    select
+        w1_0.id,
+        w1_0.account_type,
+        w1_0.balance,
+        w1_0.created_at,
+        w1_0.created_by,
+        w1_0.currency,
+        w1_0.external_id,
+        w1_0.status,
+        w1_0.updated_at,
+        w1_0.updated_by,
+        w1_0.user_id,
+        w1_0.version,
+        w1_0.wallet_type 
+    from
+        wallets w1_0 
+    where
+        w1_0.id=? for no key update
+2025-03-21 20:06:46.100 [main] DEBUG o.t.s.c.g.d.c.command.AbstrDockerCmd - Cmd: 3ccea49b7036f990dcf5ae6d779997bb1cd8bde5fce852b31404e7b3019d1976,false
+2025-03-21 20:06:46.130 [main] DEBUG o.t.s.c.g.d.c.e.InspectContainerCmdExec - GET: DefaultWebTarget{path=[/containers/3ccea49b7036f990dcf5ae6d779997bb1cd8bde5fce852b31404e7b3019d1976/json], queryParams={}}
+2025-03-21 20:06:46.159 [main] DEBUG o.t.s.c.g.d.c.command.AbstrDockerCmd - Cmd: 3ccea49b7036f990dcf5ae6d779997bb1cd8bde5fce852b31404e7b3019d1976,<null>
+2025-03-21 20:06:46.670 [main] DEBUG o.t.s.c.g.d.c.command.AbstrDockerCmd - Cmd: 3ccea49b7036f990dcf5ae6d779997bb1cd8bde5fce852b31404e7b3019d1976,false
+2025-03-21 20:06:46.670 [main] DEBUG o.t.s.c.g.d.c.e.InspectContainerCmdExec - GET: DefaultWebTarget{path=[/containers/3ccea49b7036f990dcf5ae6d779997bb1cd8bde5fce852b31404e7b3019d1976/json], queryParams={}}
+2025-03-21 20:06:46.737 [main] DEBUG o.t.s.c.g.d.c.command.AbstrDockerCmd - Cmd: 3ccea49b7036f990dcf5ae6d779997bb1cd8bde5fce852b31404e7b3019d1976,true,true
+2025-03-21 20:06:46.868 [main] DEBUG o.t.utility.ResourceReaper - Removed container and associated volume(s): postgres:14-alpine
+2025-03-21 20:06:47.346 [Thread-1] DEBUG o.t.s.c.g.d.c.command.AbstrDockerCmd - Cmd: f986494604479f92f3f28dd3e84f040a9ac9c4a9e5288fb6d16c8843a40069a2,SIGTERM
+2025-03-21 20:06:47.472 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-03-21 20:06:47.476 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+    drop table if exists transactions cascade
+2025-03-21 20:06:47.483 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@65e639f2 (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.484 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@d848bf (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.485 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@77eb2dd8 (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.486 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@20df8670 (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.486 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@72a3d612 (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.486 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@494dd67f (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.487 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@3c0e20af (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.488 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@67a3e9c8 (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.489 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@71307867 (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:06:47.489 [SpringApplicationShutdownHook] WARN  com.zaxxer.hikari.pool.PoolBase - HikariPool-1 - Failed to validate connection org.postgresql.jdbc.PgConnection@1842d92d (This connection has been closed.). Possibly consider using a shorter maxLifetime value.
+2025-03-21 20:07:17.822 [SpringApplicationShutdownHook] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Error: 0, SQLState: 08001
+2025-03-21 20:07:17.950 [SpringApplicationShutdownHook] ERROR o.h.e.jdbc.spi.SqlExceptionHelper - HikariPool-1 - Connection is not available, request timed out after 30137ms.
+2025-03-21 20:07:17.951 [SpringApplicationShutdownHook] ERROR o.h.e.jdbc.spi.SqlExceptionHelper - Connection to localhost:32853 refused. Check that the hostname and port are correct and that the postmaster is accepting TCP/IP connections.

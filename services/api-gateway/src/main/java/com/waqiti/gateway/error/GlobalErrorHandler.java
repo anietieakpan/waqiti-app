@@ -1,3 +1,6 @@
+/**
+ * File: ./api-gateway/src/main/java/com/waqiti/gateway/error/GlobalErrorHandler.java
+ */
 package com.waqiti.gateway.error;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,18 +28,16 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 public class GlobalErrorHandler implements ErrorWebExceptionHandler {
-
     private final ObjectMapper objectMapper;
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
         ServerHttpResponse response = exchange.getResponse();
-
         HttpStatus status;
         String message;
 
         if (ex instanceof ResponseStatusException) {
-            status = ((ResponseStatusException) ex).getStatusCode();
+            status = HttpStatus.valueOf(((ResponseStatusException) ex).getStatusCode().value());
             message = ex.getMessage();
         } else {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -61,7 +62,6 @@ public class GlobalErrorHandler implements ErrorWebExceptionHandler {
         // Convert to JSON
         DataBufferFactory dataBufferFactory = response.bufferFactory();
         DataBuffer dataBuffer;
-
         try {
             dataBuffer = dataBufferFactory.wrap(objectMapper.writeValueAsBytes(errorResponse));
         } catch (JsonProcessingException e) {

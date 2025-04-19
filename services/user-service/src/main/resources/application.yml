@@ -54,6 +54,10 @@ spring:
 integration-service:
   url: http://localhost:8085
 
+# Notification Service configuration
+notification-service:
+  url: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+
 # Security
 security:
   jwt:

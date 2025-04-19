@@ -1,3 +1,6 @@
+/**
+ * File: ./api-gateway/src/main/java/com/waqiti/gateway/ApiGatewayApplication.java
+ */
 package com.waqiti.gateway;
 
 import org.springframework.boot.SpringApplication;

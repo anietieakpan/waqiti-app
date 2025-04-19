@@ -17,6 +17,7 @@ import org.springframework.security.web.server.header.XFrameOptionsServerHttpHea
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.server.header.ReferrerPolicyServerHttpHeadersWriter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,8 +46,9 @@ public class SecurityConfig {
                                 .mode(XFrameOptionsServerHttpHeadersWriter.Mode.DENY))
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com"))
+
                         .referrerPolicy(referrerPolicy -> referrerPolicy
-                                .policy("strict-origin-when-cross-origin"))
+                                .policy(ReferrerPolicyServerHttpHeadersWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                         .permissionsPolicy(permissions -> permissions
                                 .policy("camera=(), microphone=(), geolocation=()"))
                 )

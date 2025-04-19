@@ -1,10 +1,12 @@
 // File: services/user-service/src/main/java/com/waqiti/user/service/MfaService.java
 package com.waqiti.user.service;
 
+import com.waqiti.user.client.NotificationServiceClient;
 import com.waqiti.user.domain.MfaConfiguration;
 import com.waqiti.user.domain.MfaMethod;
 import com.waqiti.user.domain.MfaVerificationCode;
 import com.waqiti.user.dto.MfaSetupResponse;
+import com.waqiti.user.dto.TwoFactorNotificationRequest;
 import com.waqiti.user.repository.MfaConfigurationRepository;
 import com.waqiti.user.repository.MfaVerificationCodeRepository;
 import dev.samstevens.totp.code.CodeGenerator;
@@ -42,7 +44,7 @@ public class MfaService {
 
     private final MfaConfigurationRepository mfaConfigRepository;
     private final MfaVerificationCodeRepository verificationCodeRepository;
-    private final NotificationService notificationService;
+    private final NotificationServiceClient notificationServiceClient;
 
     @Value("${application.name:Waqiti Finance}")
     private String applicationName;
@@ -132,8 +134,14 @@ public class MfaService {
         // In a real implementation, send the SMS
         // For now, we'll use the notification service as a placeholder
         try {
-            notificationService.sendSmsVerificationCode(phoneNumber, code);
-            return true;
+            TwoFactorNotificationRequest request = TwoFactorNotificationRequest.builder()
+                    .userId(userId)
+                    .recipient(phoneNumber)
+                    .verificationCode(code)
+                    .language("en") // Default language
+                    .build();
+
+            return notificationServiceClient.sendTwoFactorSms(request);
         } catch (Exception e) {
             log.error("Failed to send SMS verification code", e);
             return false;
@@ -160,8 +168,14 @@ public class MfaService {
         // In a real implementation, send the email
         // For now, we'll use the notification service as a placeholder
         try {
-            notificationService.sendEmailVerificationCode(email, code);
-            return true;
+            TwoFactorNotificationRequest request = TwoFactorNotificationRequest.builder()
+                    .userId(userId)
+                    .recipient(email)
+                    .verificationCode(code)
+                    .language("en") // Default language
+                    .build();
+
+            return notificationServiceClient.sendTwoFactorEmail(request);
         } catch (Exception e) {
             log.error("Failed to send Email verification code", e);
             return false;
@@ -184,13 +198,24 @@ public class MfaService {
 
         String code = generateAndSaveVerificationCode(userId, method);
 
-        if (method == MfaMethod.SMS) {
-            notificationService.sendSmsVerificationCode(config.getSecret(), code);
-        } else {
-            notificationService.sendEmailVerificationCode(config.getSecret(), code);
+        try {
+            TwoFactorNotificationRequest request = TwoFactorNotificationRequest.builder()
+                    .userId(userId)
+                    .recipient(config.getSecret()) // Phone number or email stored as secret
+                    .verificationCode(code)
+                    .language("en") // Default language
+                    .build();
+
+            if (method == MfaMethod.SMS) {
+                return notificationServiceClient.sendTwoFactorSms(request);
+            } else {
+                return notificationServiceClient.sendTwoFactorEmail(request);
+            }
+        } catch (Exception e) {
+            log.error("Failed to resend verification code", e);
+            return false;
         }
 
-        return true;
     }
 
     /**

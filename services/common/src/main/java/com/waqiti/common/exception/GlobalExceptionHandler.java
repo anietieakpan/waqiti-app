@@ -1,3 +1,4 @@
+// File: services/common/src/main/java/com/waqiti/common/exception/GlobalExceptionHandler.java
 package com.waqiti.common.exception;
 
 import jakarta.validation.ConstraintViolationException;
@@ -10,8 +11,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.validation.FieldError;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -64,13 +67,14 @@ public class GlobalExceptionHandler {
                         (existing, replacement) -> existing + ", " + replacement
                 ));
 
-        ValidationErrorResponse response = new ValidationErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Validation Error",
-                "Invalid input. Please check the submitted fields.",
-                errors
-        );
+        // Use the builder pattern with ValidationErrorResponse
+        ValidationErrorResponse response = ValidationErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Error")
+                .message("Invalid input. Please check the submitted fields.")
+                .validationErrors(errors)
+                .build();
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -87,13 +91,14 @@ public class GlobalExceptionHandler {
                         (existing, replacement) -> existing + ", " + replacement
                 ));
 
-        ValidationErrorResponse response = new ValidationErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Validation Error",
-                "Invalid input. Please check the submitted fields.",
-                errors
-        );
+        // Use the builder pattern with ValidationErrorResponse
+        ValidationErrorResponse response = ValidationErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Validation Error")
+                .message("Invalid input. Please check the submitted fields.")
+                .validationErrors(errors)
+                .build();
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

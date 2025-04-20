@@ -133,7 +133,7 @@ class MfaSecurityTest {
 
         // Create verification code that expires in 1 second
         MfaVerificationCode verificationCode = MfaVerificationCode.create(
-                testUser.getId(), MfaMethod.SMS, "123456", 1/60.0f); // 1 second
+                testUser.getId(), MfaMethod.SMS, "123456", (int) (1/60.0f)); // 1 second
         verificationCodeRepository.save(verificationCode);
 
         // Wait for code to expire

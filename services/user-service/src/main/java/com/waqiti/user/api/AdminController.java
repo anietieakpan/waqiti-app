@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.UUID;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,5 +32,13 @@ public class AdminController {
         log.info("Admin request to get all users");
         // For tests, just return an empty list
         return ResponseEntity.ok(new ArrayList<>());
+    }
+
+    @PostMapping("/users/{userId}/mfa/reset")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> resetUserMfa(@PathVariable UUID userId) {
+        log.info("Admin request to reset MFA for user: {}", userId);
+        userService.resetUserMfa(userId);
+        return ResponseEntity.ok().build();
     }
 }

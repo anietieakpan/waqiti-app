@@ -7,5 +7,6 @@ package com.waqiti.user.domain;
 public enum MfaMethod {
     TOTP,   // Time-based One-Time Password (authenticator apps)
     SMS,    // SMS verification codes
-    EMAIL   // Email verification codes
+    EMAIL,   // Email verification codes
+    RECOVERY_CODE  // Recovery codes for account access when other methods fail
 }

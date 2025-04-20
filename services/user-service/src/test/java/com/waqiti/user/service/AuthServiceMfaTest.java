@@ -7,12 +7,16 @@ package com.waqiti.user.service;
 import com.waqiti.user.domain.AuthenticationFailedException;
 import com.waqiti.user.domain.MfaMethod;
 import com.waqiti.user.domain.User;
+import com.waqiti.user.domain.UserStatus;
 import com.waqiti.user.dto.AuthenticationRequest;
 import com.waqiti.user.dto.AuthenticationResponse;
 import com.waqiti.user.dto.MfaVerifyRequest;
+import com.waqiti.user.dto.UserResponse;
 import com.waqiti.user.repository.UserProfileRepository;
 import com.waqiti.user.repository.UserRepository;
 import com.waqiti.user.security.JwtTokenProvider;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,6 +53,9 @@ class AuthServiceMfaTest {
     @Mock
     private MfaService mfaService;
 
+    @Mock
+    private UserService userService;
+
     @InjectMocks
     private AuthService authService;
 
@@ -78,6 +85,7 @@ class AuthServiceMfaTest {
 
         User user = User.create(username, "user@example.com", "$2a$10$hashed", "ext-1");
         ReflectionTestUtils.setField(user, "id", userId);
+        ReflectionTestUtils.setField(user, "status", UserStatus.ACTIVE);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         // MFA is enabled for this user
@@ -126,6 +134,7 @@ class AuthServiceMfaTest {
 
         User user = User.create(username, "user@example.com", "$2a$10$hashed", "ext-1");
         ReflectionTestUtils.setField(user, "id", userId);
+        ReflectionTestUtils.setField(user, "status", UserStatus.ACTIVE);
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         // MFA is NOT enabled for this user
@@ -169,9 +178,12 @@ class AuthServiceMfaTest {
         when(tokenProvider.getUserId(mfaToken)).thenReturn(userId);
         when(tokenProvider.getUsername(mfaToken)).thenReturn(username);
 
-        Map<String, Object> claims = new HashMap<>();
+
+                // Change to:
+        Claims claims = Jwts.claims();
         claims.put("mfa_required", true);
         when(tokenProvider.getClaimsFromToken(mfaToken)).thenReturn(claims);
+
 
         // Mock MFA verification
         when(mfaService.verifyMfaCode(userId, method, code)).thenReturn(true);
@@ -181,6 +193,13 @@ class AuthServiceMfaTest {
         ReflectionTestUtils.setField(user, "id", userId);
         user.addRole("ROLE_USER");
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        // Mock userService.getUserById
+        UserResponse userResponse = UserResponse.builder()
+                .id(userId)
+                .username(username)
+                .build();
+        when(userService.getUserById(userId)).thenReturn(userResponse);
 
         // Mock tokens for successful authentication
         String accessToken = "access-token";

@@ -41,4 +41,6 @@ public interface MfaVerificationCodeRepository extends JpaRepository<MfaVerifica
      * Delete verification codes for a user
      */
     void deleteByUserId(UUID userId);
+
+
 }

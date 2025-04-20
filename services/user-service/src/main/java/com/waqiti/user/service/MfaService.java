@@ -78,7 +78,8 @@ public class MfaService {
             secret = secretGenerator.generate();
             config.updateSecret(secret);
             config.disable();
-        } else if (!config.getId().equals(UUID.fromString("00000000-0000-0000-0000-000000000000"))) {
+        } else if (config.getId() != null &&
+                !config.getId().equals(UUID.fromString("00000000-0000-0000-0000-000000000000"))) {
             // If it exists but is not verified, update the secret
             config.updateSecret(secret);
         }
@@ -93,6 +94,10 @@ public class MfaService {
                 .qrCodeImage(qrCodeImage)
                 .build();
     }
+
+
+
+
 
     /**
      * Verify TOTP setup using a code from the authenticator app
@@ -353,6 +358,78 @@ public class MfaService {
             throw new RuntimeException("Failed to generate QR code", e);
         }
     }
+
+    /**
+     * Generates recovery codes for a user
+     * @param userId The user ID
+     * @param count Number of recovery codes to generate
+     * @return Array of recovery code UUIDs
+     */
+    @Transactional
+    public UUID[] generateRecoveryCodes(UUID userId, int count) {
+        log.info("Generating {} recovery codes for user: {}", count, userId);
+
+        // Check if user has MFA enabled
+        if (!isMfaEnabled(userId)) {
+            throw new IllegalStateException("MFA must be enabled to generate recovery codes");
+        }
+
+        // Generate random recovery codes
+        UUID[] recoveryCodes = new UUID[count];
+        for (int i = 0; i < count; i++) {
+            recoveryCodes[i] = UUID.randomUUID();
+
+            // Store the recovery code hash in the database
+            // We're using MfaVerificationCode to store recovery codes with a special method type
+            MfaVerificationCode recoveryCode = MfaVerificationCode.create(
+                    userId,
+                    MfaMethod.RECOVERY_CODE,
+                    recoveryCodes[i].toString(),
+                    365 * 24 * 60 // Valid for 1 year in minutes
+            );
+            verificationCodeRepository.save(recoveryCode);
+        }
+
+        return recoveryCodes;
+    }
+
+    /**
+     * Verifies a recovery code for a user
+     * @param userId The user ID
+     * @param recoveryCode The recovery code to verify
+     * @return True if recovery code is valid
+     */
+    @Transactional
+    public boolean verifyRecoveryCode(UUID userId, String recoveryCode) {
+        log.info("Verifying recovery code for user: {}", userId);
+
+        // Find the recovery code
+        Optional<MfaVerificationCode> code = verificationCodeRepository
+                .findByUserIdAndMethodAndCodeAndUsedFalseAndExpiryDateAfter(
+                        userId, MfaMethod.RECOVERY_CODE, recoveryCode, LocalDateTime.now());
+
+        if (code.isPresent()) {
+            MfaVerificationCode rc = code.get();
+            if (rc.isValid()) {
+                // Mark recovery code as used
+                rc.markUsed();
+                verificationCodeRepository.save(rc);
+
+                // Disable MFA for the user since they're using a recovery code
+                // This is a common pattern - after recovery, user needs to set up MFA again
+                mfaConfigRepository.findByUserIdAndEnabledTrue(userId)
+                        .forEach(config -> {
+                            config.disable();
+                            mfaConfigRepository.save(config);
+                        });
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     /**
      * Cleanup expired verification codes

@@ -19,6 +19,7 @@ import com.waqiti.user.repository.MfaVerificationCodeRepository;
 import com.waqiti.user.repository.UserRepository;
 import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.TestPropertyExtensions;
+import org.springframework.test.context.TestPropertySource;
+
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -43,7 +45,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-@TestPropertyExtensions({
+@TestPropertySource(properties = {
         "spring.datasource.url=jdbc:tc:postgresql:13:///testdb",
         "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}"
 })
@@ -237,7 +239,7 @@ class AuthenticationMfaE2ETest {
 
     // Helper methods
 
-    private String generateTotpCode(String secret) {
+    private String generateTotpCode(String secret) throws CodeGenerationException {
         TimeProvider timeProvider = new SystemTimeProvider();
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
         long counter = timeProvider.getTime() / 30;

@@ -4,6 +4,8 @@
  */
 package com.waqiti.user.auth;
 
+
+import com.waqiti.user.config.TestOAuth2Config;
 import com.waqiti.user.domain.MfaConfiguration;
 import com.waqiti.user.domain.MfaMethod;
 import com.waqiti.user.domain.MfaVerificationCode;
@@ -21,12 +23,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.TestPropertyExtensions;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
 import java.util.UUID;
@@ -34,8 +37,14 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertyExtensions({
-        "spring.datasource.url=jdbc:tc:postgresql:13:///testdb"
+@Import(TestOAuth2Config.class)
+@TestPropertySource(properties = {
+        "spring.datasource.url=jdbc:tc:postgresql:13:///testdb",
+        "security.jwt.token.secret-key=dGVzdHNlY3JldGtleWZvcnVuaXR0ZXN0c29ubHlub3Rmb3Jwcm9kdWN0aW9udGVzdHNlY3JldGtleWZvcnVuaXR0ZXN0cw==",
+        "security.jwt.token.access-token-expire-length=3600000",
+        "security.jwt.token.refresh-token-expire-length=86400000",
+        "security.jwt.token.mfa-token-expire-length=300000"
+
 })
 class MfaRecoveryTest {
     @Autowired

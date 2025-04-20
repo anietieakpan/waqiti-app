@@ -6,11 +6,7 @@ import com.waqiti.user.client.dto.CreateUserResponse;
 import com.waqiti.user.client.dto.UpdateUserRequest;
 import com.waqiti.user.domain.*;
 import com.waqiti.user.dto.*;
-import com.waqiti.user.domain.*;
-import com.waqiti.user.dto.*;
-import com.waqiti.user.repository.UserProfileRepository;
-import com.waqiti.user.repository.UserRepository;
-import com.waqiti.user.repository.VerificationTokenRepository;
+import com.waqiti.user.repository.*;
 import com.waqiti.user.security.JwtTokenProvider;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -24,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,6 +34,9 @@ public class UserService {
     private final JwtTokenProvider tokenProvider;
     private final AuthenticationManager authenticationManager;
     private final IntegrationServiceClient integrationClient;
+
+    private final MfaConfigurationRepository mfaConfigRepository;
+    private final MfaVerificationCodeRepository verificationCodeRepository;
 
     /**
      * Register a new user
@@ -417,6 +417,25 @@ public class UserService {
         userRepository.save(user);
 
         return true;
+    }
+
+    /**
+     * Resets all MFA configurations for a user (admin function)
+     */
+    @Transactional
+    public void resetUserMfa(UUID userId) {
+        log.info("Resetting MFA for user: {}", userId);
+
+        // Find the user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        // Find all MFA configurations for the user and delete them
+        List<MfaConfiguration> configs = mfaConfigRepository.findByUserId(userId);
+        mfaConfigRepository.deleteAll(configs);
+
+        // Delete any verification codes as well
+        verificationCodeRepository.deleteByUserId(userId);
     }
 
     /**

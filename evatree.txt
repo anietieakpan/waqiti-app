@@ -1,0 +1,977 @@
+.
+├── config
+│   ├── secrets
+│   ├── templates
+│   └── vault
+│       └── policies
+├── docker-compose.yml
+├── docs
+│   ├── api
+│   │   ├── openapi
+│   │   └── postman
+│   ├── architecture
+│   │   ├── decisions
+│   │   ├── diagrams
+│   │   └── principles
+│   ├── development
+│   └── operations
+├── evatree.txt
+├── frontend
+│   ├── admin-dashboard
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   └── src
+│   │       ├── components
+│   │       └── pages
+│   │           ├── analytics
+│   │           ├── configuration
+│   │           ├── monitoring
+│   │           ├── transactions
+│   │           └── user-management
+│   ├── mobile-app
+│   │   ├── android
+│   │   ├── ios
+│   │   ├── package.json
+│   │   ├── README.md
+│   │   └── src
+│   │       ├── components
+│   │       ├── screens
+│   │       └── services
+│   └── web-app
+│       ├── package.json
+│       ├── public
+│       ├── README.md
+│       └── src
+│           ├── components
+│           │   ├── auth
+│           │   ├── common
+│           │   ├── notification
+│           │   ├── payment
+│           │   └── wallet
+│           ├── hooks
+│           ├── pages
+│           │   ├── auth
+│           │   ├── dashboard
+│           │   ├── payment
+│           │   ├── settings
+│           │   └── wallet
+│           ├── services
+│           ├── store
+│           │   ├── auth
+│           │   └── wallet
+│           ├── theme
+│           └── utils
+├── improved-testing-strategy.md
+├── infrastructure
+│   ├── disaster-recovery
+│   │   ├── backup
+│   │   ├── restore
+│   │   └── testing
+│   ├── docker
+│   │   ├── base
+│   │   │   ├── java
+│   │   │   ├── nginx
+│   │   │   └── node
+│   │   └── compose
+│   ├── kubernetes
+│   │   ├── base
+│   │   │   ├── config
+│   │   │   ├── deployments
+│   │   │   ├── ingress
+│   │   │   ├── namespaces
+│   │   │   ├── security
+│   │   │   └── services
+│   │   ├── monitoring
+│   │   │   ├── alertmanager
+│   │   │   ├── grafana
+│   │   │   │   ├── dashboards
+│   │   │   │   └── datasources
+│   │   │   └── prometheus
+│   │   ├── operators
+│   │   │   ├── p2p-monitoring-operator
+│   │   │   └── p2p-wallet-operator
+│   │   ├── overlays
+│   │   │   ├── dev
+│   │   │   ├── production
+│   │   │   └── staging
+│   │   └── scaling
+│   │       ├── hpa
+│   │       └── vpa
+│   └── terraform
+│       ├── environments
+│       │   ├── dev
+│       │   ├── production
+│       │   └── staging
+│       └── modules
+│           ├── cache
+│           ├── database
+│           ├── messaging
+│           └── networking
+├── kubernetes
+│   ├── configmap.yaml
+│   ├── environments
+│   │   ├── dev
+│   │   └── prod
+│   ├── namespace.yaml
+│   └── services
+├── Makefile
+├── me.sh
+├── more-readme.md
+├── pom.xml
+├── README.md
+├── run-goose.sh
+├── run-tests.sh
+├── scripts
+│   ├── ci
+│   ├── load-tests
+│   │   └── WalletServiceLoadTest.jmx
+│   ├── maintenance
+│   └── setup
+├── services
+│   ├── analytics-service
+│   │   ├── Dockerfile
+│   │   ├── pom.xml
+│   │   └── src
+│   │       ├── main
+│   │       │   ├── java
+│   │       │   │   └── com
+│   │       │   │       └── waqiti
+│   │       │   │           └── analytics-service
+│   │       │   │               ├── application
+│   │       │   │               │   ├── command
+│   │       │   │               │   ├── dto
+│   │       │   │               │   ├── port
+│   │       │   │               │   │   ├── input
+│   │       │   │               │   │   └── output
+│   │       │   │               │   ├── query
+│   │       │   │               │   └── service
+│   │       │   │               ├── dashboard
+│   │       │   │               │   ├── controller
+│   │       │   │               │   ├── model
+│   │       │   │               │   └── service
+│   │       │   │               ├── domain
+│   │       │   │               │   ├── aggregate
+│   │       │   │               │   ├── event
+│   │       │   │               │   ├── model
+│   │       │   │               │   ├── service
+│   │       │   │               │   └── valueobject
+│   │       │   │               ├── etl
+│   │       │   │               │   ├── extractor
+│   │       │   │               │   ├── loader
+│   │       │   │               │   └── transformer
+│   │       │   │               ├── infrastructure
+│   │       │   │               │   ├── client
+│   │       │   │               │   ├── messaging
+│   │       │   │               │   ├── persistence
+│   │       │   │               │   │   ├── entity
+│   │       │   │               │   │   ├── mapper
+│   │       │   │               │   │   └── repository
+│   │       │   │               │   └── security
+│   │       │   │               ├── ml
+│   │       │   │               │   ├── model
+│   │       │   │               │   ├── prediction
+│   │       │   │               │   └── training
+│   │       │   │               ├── presentation
+│   │       │   │               │   ├── api
+│   │       │   │               │   ├── dto
+│   │       │   │               │   └── mapper
+│   │       │   │               └── reporting
+│   │       │   │                   ├── distributor
+│   │       │   │                   ├── generator
+│   │       │   │                   └── scheduler
+│   │       │   └── resources
+│   │       │       └── db
+│   │       │           └── migration
+│   │       └── test
+│   │           ├── java
+│   │           │   └── com
+│   │           │       └── waqiti
+│   │           │           └── analytics-service
+│   │           │               ├── contract
+│   │           │               ├── e2e
+│   │           │               ├── integration
+│   │           │               │   ├── api
+│   │           │               │   ├── client
+│   │           │               │   └── repository
+│   │           │               ├── performance
+│   │           │               └── unit
+│   │           │                   ├── domain
+│   │           │                   └── service
+│   │           └── resources
+│   │               ├── contracts
+│   │               └── test-data
+│   ├── api-gateway
+│   │   ├── Dockerfile
+│   │   ├── logs
+│   │   │   └── api-gateway.log
+│   │   ├── pom.xml
+│   │   ├── src
+│   │   │   ├── main
+│   │   │   │   ├── java
+│   │   │   │   │   └── com
+│   │   │   │   │       └── waqiti
+│   │   │   │   │           └── gateway
+│   │   │   │   │               ├── ApiGatewayApplication.java
+│   │   │   │   │               ├── config
+│   │   │   │   │               │   ├── JsonConfig.java
+│   │   │   │   │               │   ├── ObservabilityConfig.java
+│   │   │   │   │               │   ├── RateLimiterConfig.java
+│   │   │   │   │               │   ├── RouteConfig.java
+│   │   │   │   │               │   └── SecurityConfig.java
+│   │   │   │   │               ├── controller
+│   │   │   │   │               │   └── FallbackController.java
+│   │   │   │   │               ├── error
+│   │   │   │   │               │   └── GlobalErrorHandler.java
+│   │   │   │   │               ├── filter
+│   │   │   │   │               │   ├── LoggingFilter.java
+│   │   │   │   │               │   ├── RequestHeaderFilter.java
+│   │   │   │   │               │   └── TracingFilter.java
+│   │   │   │   │               └── security
+│   │   │   │   │                   ├── AuthenticationFilter.java
+│   │   │   │   │                   └── JwtUtil.java
+│   │   │   │   └── resources
+│   │   │   │       └── application.yml
+│   │   │   └── test
+│   │   │       ├── java
+│   │   │       │   └── com
+│   │   │       │       ├── p2pfinance
+│   │   │       │       └── waqiti
+│   │   │       │           └── gateway
+│   │   │       │               ├── ApiGatewayIntegrationTest.java
+│   │   │       │               └── filter
+│   │   │       │                   └── TracingFilterTest.java
+│   │   │       └── resources
+│   │   │           └── application-test.yml
+│   │   └── target
+│   │       ├── classes
+│   │       │   ├── application.yml
+│   │       │   └── com
+│   │       │       └── waqiti
+│   │       │           └── gateway
+│   │       │               ├── ApiGatewayApplication.class
+│   │       │               ├── config
+│   │       │               │   ├── JsonConfig.class
+│   │       │               │   ├── ObservabilityConfig.class
+│   │       │               │   ├── RateLimiterConfig.class
+│   │       │               │   ├── RouteConfig.class
+│   │       │               │   └── SecurityConfig.class
+│   │       │               ├── controller
+│   │       │               │   └── FallbackController.class
+│   │       │               ├── error
+│   │       │               │   └── GlobalErrorHandler.class
+│   │       │               ├── filter
+│   │       │               │   ├── LoggingFilter.class
+│   │       │               │   ├── RequestHeaderFilter.class
+│   │       │               │   └── TracingFilter.class
+│   │       │               └── security
+│   │       │                   ├── AuthenticationFilter.class
+│   │       │                   └── JwtUtil.class
+│   │       ├── generated-sources
+│   │       │   └── annotations
+│   │       ├── generated-test-sources
+│   │       │   └── test-annotations
+│   │       ├── maven-status
+│   │       │   └── maven-compiler-plugin
+│   │       │       ├── compile
+│   │       │       │   └── default-compile
+│   │       │       │       ├── createdFiles.lst
+│   │       │       │       └── inputFiles.lst
+│   │       │       └── testCompile
+│   │       │           └── default-testCompile
+│   │       │               ├── createdFiles.lst
+│   │       │               └── inputFiles.lst
+│   │       ├── surefire-reports
+│   │       │   ├── com.waqiti.gateway.filter.TracingFilterTest.txt
+│   │       │   └── TEST-com.waqiti.gateway.filter.TracingFilterTest.xml
+│   │       └── test-classes
+│   │           ├── application-test.yml
+│   │           └── com
+│   │               └── waqiti
+│   │                   └── gateway
+│   │                       ├── ApiGatewayIntegrationTest.class
+│   │                       └── filter
+│   │                           └── TracingFilterTest.class
+│   ├── common
+│   │   ├── domain
+│   │   │   ├── pom.xml
+│   │   │   └── src
+│   │   │       └── main
+│   │   │           └── java
+│   │   │               └── com
+│   │   │                   └── waqiti
+│   │   │                       └── common
+│   │   │                           └── domain
+│   │   │                               ├── event
+│   │   │                               ├── model
+│   │   │                               └── valueobject
+│   │   ├── pom.xml
+│   │   ├── security
+│   │   │   ├── pom.xml
+│   │   │   └── src
+│   │   │       └── main
+│   │   │           └── java
+│   │   │               └── com
+│   │   │                   └── waqiti
+│   │   │                       └── common
+│   │   │                           └── security
+│   │   │                               ├── audit
+│   │   │                               ├── encryption
+│   │   │                               └── jwt
+│   │   ├── src
+│   │   │   └── main
+│   │   │       └── java
+│   │   │           └── com
+│   │   │               └── waqiti
+│   │   │                   └── common
+│   │   │                       ├── audit
+│   │   │                       │   ├── Auditable.java
+│   │   │                       │   ├── AuditConfig.java
+│   │   │                       │   └── SpringSecurityAuditorAware.java
+│   │   │                       ├── config
+│   │   │                       │   ├── OpenApiConfig.java
+│   │   │                       │   └── TracingConfig.java
+│   │   │                       ├── event
+│   │   │                       │   ├── AbstractDomainEvent.java
+│   │   │                       │   ├── DomainEvent.java
+│   │   │                       │   └── EventPublisher.java
+│   │   │                       ├── exception
+│   │   │                       │   ├── BusinessException.java
+│   │   │                       │   ├── DuplicateResourceException.java
+│   │   │                       │   ├── ErrorResponse.java
+│   │   │                       │   ├── GlobalExceptionHandler.java
+│   │   │                       │   ├── InsufficientFundsException.java
+│   │   │                       │   ├── InvalidResourceStateException.java
+│   │   │                       │   ├── ResourceNotFoundException.java
+│   │   │                       │   ├── TransactionFailedException.java
+│   │   │                       │   └── ValidationErrorResponse.java
+│   │   │                       ├── security
+│   │   │                       │   └── OAuth2Configuration.java
+│   │   │                       └── util
+│   │   │                           ├── DtoUtils.java
+│   │   │                           ├── PageResponse.java
+│   │   │                           └── StringUtils.java
+│   │   ├── target
+│   │   │   ├── classes
+│   │   │   │   └── com
+│   │   │   │       └── waqiti
+│   │   │   │           └── common
+│   │   │   │               ├── audit
+│   │   │   │               │   ├── Auditable.class
+│   │   │   │               │   ├── AuditConfig.class
+│   │   │   │               │   └── SpringSecurityAuditorAware.class
+│   │   │   │               ├── config
+│   │   │   │               │   ├── OpenApiConfig.class
+│   │   │   │               │   └── TracingConfig.class
+│   │   │   │               ├── event
+│   │   │   │               │   ├── AbstractDomainEvent.class
+│   │   │   │               │   ├── DomainEvent.class
+│   │   │   │               │   └── EventPublisher.class
+│   │   │   │               ├── exception
+│   │   │   │               │   ├── BusinessException.class
+│   │   │   │               │   ├── DuplicateResourceException.class
+│   │   │   │               │   ├── ErrorResponse.class
+│   │   │   │               │   ├── ErrorResponse$ErrorResponseBuilder.class
+│   │   │   │               │   ├── GlobalExceptionHandler.class
+│   │   │   │               │   ├── InsufficientFundsException.class
+│   │   │   │               │   ├── InvalidResourceStateException.class
+│   │   │   │               │   ├── ResourceNotFoundException.class
+│   │   │   │               │   ├── TransactionFailedException.class
+│   │   │   │               │   ├── ValidationErrorResponse.class
+│   │   │   │               │   └── ValidationErrorResponse$ValidationErrorResponseBuilder.class
+│   │   │   │               ├── security
+│   │   │   │               │   └── OAuth2Configuration.class
+│   │   │   │               └── util
+│   │   │   │                   ├── DtoUtils.class
+│   │   │   │                   ├── PageResponse.class
+│   │   │   │                   ├── PageResponse$PageResponseBuilder.class
+│   │   │   │                   └── StringUtils.class
+│   │   │   ├── common-1.0-SNAPSHOT.jar
+│   │   │   ├── failsafe-reports
+│   │   │   │   └── failsafe-summary.xml
+│   │   │   ├── generated-sources
+│   │   │   │   └── annotations
+│   │   │   ├── maven-archiver
+│   │   │   │   └── pom.properties
+│   │   │   └── maven-status
+│   │   │       └── maven-compiler-plugin
+│   │   │           └── compile
+│   │   │               └── default-compile
+│   │   │                   ├── createdFiles.lst
+│   │   │                   └── inputFiles.lst
+│   │   ├── test
+│   │   │   ├── pom.xml
+│   │   │   └── src
+│   │   │       └── main
+│   │   │           └── java
+│   │   │               └── com
+│   │   │                   └── waqiti
+│   │   │                       └── common
+│   │   │                           └── test
+│   │   │                               ├── assertion
+│   │   │                               ├── container
+│   │   │                               └── fixture
+│   │   └── util
+│   │       ├── pom.xml
+│   │       └── src
+│   │           └── main
+│   │               └── java
+│   │                   └── com
+│   │                       └── waqiti
+│   │                           └── common
+│   │                               └── util
+│   │                                   ├── collection
+│   │                                   ├── format
+│   │                                   └── validation
+│   ├── config-service
+│   │   ├── pom.xml
+│   │   └── src
+│   │       └── main
+│   │           ├── java
+│   │           │   └── com
+│   │           │       └── waqiti
+│   │           │           └── config
+│   │           │               └── ConfigServiceApplication.java
+│   │           └── resources
+│   │               └── application.yml
+│   ├── discovery-service
+│   │   ├── pom.xml
+│   │   └── src
+│   │       └── main
+│   │           ├── java
+│   │           │   └── com
+│   │           │       └── waqiti
+│   │           │           └── discovery
+│   │           │               └── DiscoveryServiceApplication.java
+│   │           └── resources
+│   │               └── application.yml
+│   ├── integration-service
+│   │   ├── Dockerfile
+│   │   ├── pom.xml
+│   │   └── src
+│   │       ├── main
+│   │       │   ├── java
+│   │       │   │   └── com
+│   │       │   │       ├── p2pfinance
+│   │       │   │       └── waqiti
+│   │       │   │           └── integration
+│   │       │   │               ├── config
+│   │       │   │               │   ├── CyclosConfig.java
+│   │       │   │               │   ├── FeignClientConfig.java
+│   │       │   │               │   └── FineractConfig.java
+│   │       │   │               ├── cyclos
+│   │       │   │               │   ├── api
+│   │       │   │               │   │   └── CyclosApiClient.java
+│   │       │   │               │   ├── dto
+│   │       │   │               │   │   ├── AccountBalanceResponse.java
+│   │       │   │               │   │   ├── AccountCreationRequest.java
+│   │       │   │               │   │   ├── AccountResponse.java
+│   │       │   │               │   │   ├── CustomFields.java
+│   │       │   │               │   │   ├── PaymentDestination.java
+│   │       │   │               │   │   ├── PaymentRequest.java
+│   │       │   │               │   │   ├── PaymentResponse.java
+│   │       │   │               │   │   ├── UserRegistrationRequest.java
+│   │       │   │               │   │   └── UserRegistrationResponse.java
+│   │       │   │               │   └── service
+│   │       │   │               │       ├── CyclosAuthService.java
+│   │       │   │               │       └── CyclosIntegrationService.java
+│   │       │   │               ├── fineract
+│   │       │   │               │   ├── api
+│   │       │   │               │   │   └── FineractApiClient.java
+│   │       │   │               │   ├── dto
+│   │       │   │               │   │   ├── ClientRequest.java
+│   │       │   │               │   │   ├── ClientResponse.java
+│   │       │   │               │   │   ├── SavingsAccountRequest.java
+│   │       │   │               │   │   ├── SavingsAccountResponse.java
+│   │       │   │               │   │   ├── TransactionRequest.java
+│   │       │   │               │   │   └── TransactionResponse.java
+│   │       │   │               │   └── service
+│   │       │   │               │       └── FineractIntegrationService.java
+│   │       │   │               └── IntegrationServiceApplication.java
+│   │       │   └── resources
+│   │       │       └── application.yml
+│   │       └── test
+│   │           ├── java
+│   │           │   └── com
+│   │           │       ├── p2pfinance
+│   │           │       └── waqiti
+│   │           │           └── integration
+│   │           │               └── service
+│   │           │                   └── FeignIntegrationServiceTest.java
+│   │           └── resources
+│   │               └── application-test.yml
+│   ├── notification-service
+│   │   ├── Dockerfile
+│   │   ├── logs
+│   │   │   └── notification-service.log
+│   │   ├── notification-service.llm
+│   │   ├── pom.xml
+│   │   ├── run-tests.sh
+│   │   └── src
+│   │       ├── main
+│   │       │   ├── java
+│   │       │   │   └── com
+│   │       │   │       ├── p2pfinance
+│   │       │   │       └── waqiti
+│   │       │   │           └── notification
+│   │       │   │               ├── api
+│   │       │   │               │   ├── NotificationController.java
+│   │       │   │               │   ├── NotificationPreferencesController.java
+│   │       │   │               │   ├── NotificationTemplateController.java
+│   │       │   │               │   └── TwoFactorNotificationController.java
+│   │       │   │               ├── config
+│   │       │   │               │   ├── FirebaseConfig.java
+│   │       │   │               │   └── KafkaConsumerConfig.java
+│   │       │   │               ├── domain
+│   │       │   │               │   ├── DeliveryStatus.java
+│   │       │   │               │   ├── Notification.java
+│   │       │   │               │   ├── NotificationCategory.java
+│   │       │   │               │   ├── NotificationPreferences.java
+│   │       │   │               │   ├── NotificationTemplate.java
+│   │       │   │               │   └── NotificationType.java
+│   │       │   │               ├── dto
+│   │       │   │               │   ├── NotificationListResponse.java
+│   │       │   │               │   ├── NotificationPreferencesResponse.java
+│   │       │   │               │   ├── NotificationResponse.java
+│   │       │   │               │   ├── NotificationTemplateRequest.java
+│   │       │   │               │   ├── NotificationTemplateResponse.java
+│   │       │   │               │   ├── SendNotificationRequest.java
+│   │       │   │               │   ├── TwoFactorNotificationRequest.java
+│   │       │   │               │   └── UpdatePreferencesRequest.java
+│   │       │   │               ├── event
+│   │       │   │               │   ├── NotificationEvent.java
+│   │       │   │               │   ├── PaymentRequestEvent.java
+│   │       │   │               │   ├── ScheduledPaymentEvent.java
+│   │       │   │               │   ├── SecurityEvent.java
+│   │       │   │               │   ├── SplitPaymentEvent.java
+│   │       │   │               │   ├── UserRegisteredEvent.java
+│   │       │   │               │   ├── UserVerifiedEvent.java
+│   │       │   │               │   └── WalletTransactionEvent.java
+│   │       │   │               ├── messaging
+│   │       │   │               │   └── NotificationEventListener.java
+│   │       │   │               ├── NotificationServiceApplication.java
+│   │       │   │               ├── repository
+│   │       │   │               │   ├── NotificationPreferencesRepository.java
+│   │       │   │               │   ├── NotificationRepository.java
+│   │       │   │               │   └── NotificationTemplateRepository.java
+│   │       │   │               └── service
+│   │       │   │                   ├── NotificationPreferencesService.java
+│   │       │   │                   ├── NotificationSenderService.java
+│   │       │   │                   ├── NotificationService.java
+│   │       │   │                   ├── NotificationTemplateService.java
+│   │       │   │                   ├── provider
+│   │       │   │                   │   └── SmsProvider.java
+│   │       │   │                   ├── TemplateRenderer.java
+│   │       │   │                   └── TwoFactorNotificationService.java
+│   │       │   └── resources
+│   │       │       ├── application.yml
+│   │       │       └── db
+│   │       │           └── migration
+│   │       │               ├── V1__create_notification_tables.sql
+│   │       │               └── V2__add_2fa_templates.sql
+│   │       └── test
+│   │           ├── java
+│   │           │   └── com
+│   │           │       ├── p2pfinance
+│   │           │       └── waqiti
+│   │           │           └── notification
+│   │           │               ├── api
+│   │           │               │   └── NotificationControllerTest.java
+│   │           │               ├── config
+│   │           │               │   ├── NotificationTestConfig.java
+│   │           │               │   └── TestFirebaseConfig.java
+│   │           │               ├── messaging
+│   │           │               │   ├── NotificationEventListenerTest.java
+│   │           │               │   └── NotificationKafkaIntegrationTest.java
+│   │           │               ├── NotificationE2ETest.java
+│   │           │               ├── repository
+│   │           │               │   ├── JpaTestConfig.java
+│   │           │               │   ├── NotificationRepositoryTest.java
+│   │           │               │   └── NotificationTemplateRepositoryTest.java
+│   │           │               ├── service
+│   │           │               │   ├── NotificationPreferencesServiceTest.java
+│   │           │               │   ├── NotificationSenderServiceTest.java
+│   │           │               │   ├── NotificationServiceIntegrationTest.java
+│   │           │               │   ├── NotificationServiceTest.java
+│   │           │               │   ├── NotificationTemplateServiceTest.java
+│   │           │               │   └── TemplateRendererTest.java
+│   │           │               └── TestcontainersBase.java
+│   │           └── resources
+│   │               └── application-test.yml
+│   ├── payment-service
+│   │   ├── Dockerfile
+│   │   ├── logs
+│   │   │   └── payment-service.log
+│   │   ├── pom.xml
+│   │   └── src
+│   │       ├── main
+│   │       │   ├── java
+│   │       │   │   └── com
+│   │       │   │       ├── p2pfinance
+│   │       │   │       └── waqiti
+│   │       │   │           └── payment
+│   │       │   │               ├── api
+│   │       │   │               │   ├── GlobalExceptionHandler.java
+│   │       │   │               │   ├── PaymentRequestController.java
+│   │       │   │               │   ├── ScheduledPaymentController.java
+│   │       │   │               │   └── SplitPaymentController.java
+│   │       │   │               ├── client
+│   │       │   │               │   ├── dto
+│   │       │   │               │   │   ├── TransferRequest.java
+│   │       │   │               │   │   ├── TransferResponse.java
+│   │       │   │               │   │   ├── UserProfileResponse.java
+│   │       │   │               │   │   ├── UserResponse.java
+│   │       │   │               │   │   └── WalletResponse.java
+│   │       │   │               │   ├── UserServiceClient.java
+│   │       │   │               │   └── WalletServiceClient.java
+│   │       │   │               ├── domain
+│   │       │   │               │   ├── InvalidPaymentOperationException.java
+│   │       │   │               │   ├── InvalidPaymentStatusException.java
+│   │       │   │               │   ├── PaymentFailedException.java
+│   │       │   │               │   ├── PaymentLimitExceededException.java
+│   │       │   │               │   ├── PaymentRequest.java
+│   │       │   │               │   ├── PaymentRequestNotFoundException.java
+│   │       │   │               │   ├── PaymentRequestStatus.java
+│   │       │   │               │   ├── ScheduledPayment.java
+│   │       │   │               │   ├── ScheduledPaymentExecution.java
+│   │       │   │               │   ├── ScheduledPaymentExecutionStatus.java
+│   │       │   │               │   ├── ScheduledPaymentFrequency.java
+│   │       │   │               │   ├── ScheduledPaymentNotFoundException.java
+│   │       │   │               │   ├── ScheduledPaymentStatus.java
+│   │       │   │               │   ├── SplitPayment.java
+│   │       │   │               │   ├── SplitPaymentNotFoundException.java
+│   │       │   │               │   ├── SplitPaymentParticipant.java
+│   │       │   │               │   └── SplitPaymentStatus.java
+│   │       │   │               ├── dto
+│   │       │   │               │   ├── AddParticipantRequest.java
+│   │       │   │               │   ├── ApprovePaymentRequestRequest.java
+│   │       │   │               │   ├── CancelPaymentRequestRequest.java
+│   │       │   │               │   ├── CancelScheduledPaymentRequest.java
+│   │       │   │               │   ├── CreatePaymentRequestRequest.java
+│   │       │   │               │   ├── CreateScheduledPaymentRequest.java
+│   │       │   │               │   ├── CreateSplitPaymentRequest.java
+│   │       │   │               │   ├── PauseScheduledPaymentRequest.java
+│   │       │   │               │   ├── PaymentRequestResponse.java
+│   │       │   │               │   ├── PaySplitShareRequest.java
+│   │       │   │               │   ├── ResumeScheduledPaymentRequest.java
+│   │       │   │               │   ├── ScheduledPaymentExecutionResponse.java
+│   │       │   │               │   ├── ScheduledPaymentResponse.java
+│   │       │   │               │   ├── SplitPaymentParticipantRequest.java
+│   │       │   │               │   ├── SplitPaymentParticipantResponse.java
+│   │       │   │               │   ├── SplitPaymentResponse.java
+│   │       │   │               │   ├── SplitPaymentStatisticsResponse.java
+│   │       │   │               │   ├── UpdateParticipantAmountRequest.java
+│   │       │   │               │   └── UpdateScheduledPaymentRequest.java
+│   │       │   │               ├── event
+│   │       │   │               │   ├── EventPublisher.java
+│   │       │   │               │   └── KafkaEventPublisher.java
+│   │       │   │               ├── PaymentServiceApplication.java
+│   │       │   │               ├── repository
+│   │       │   │               │   ├── PaymentRequestRepository.java
+│   │       │   │               │   ├── ScheduledPaymentRepository.java
+│   │       │   │               │   ├── SplitPaymentParticipantRepository.java
+│   │       │   │               │   └── SplitPaymentRepository.java
+│   │       │   │               └── service
+│   │       │   │                   ├── PaymentRequestService.java
+│   │       │   │                   ├── PaymentService.java
+│   │       │   │                   ├── ScheduledPaymentService.java
+│   │       │   │                   └── SplitPaymentService.java
+│   │       │   └── resources
+│   │       │       ├── application.yml
+│   │       │       └── db
+│   │       │           └── migration
+│   │       │               └── V1__create_payment_tables.sql
+│   │       └── test
+│   │           ├── java
+│   │           │   └── com
+│   │           │       ├── p2pfinance
+│   │           │       └── waqiti
+│   │           │           └── payment
+│   │           │               ├── config
+│   │           │               │   ├── KafkaTestConfig.java
+│   │           │               │   ├── TestConfig.java
+│   │           │               │   └── TestSecurityConfig.java
+│   │           │               ├── event
+│   │           │               │   └── TestEventPublisher.java
+│   │           │               ├── PaymentServiceE2ETest.java
+│   │           │               └── service
+│   │           │                   ├── PaymentRequestServiceTest.java
+│   │           │                   ├── PaymentServiceIntegrationTest.java
+│   │           │                   └── SplitPaymentServiceTest.java
+│   │           └── resources
+│   │               └── application-test.yml
+│   ├── security-service
+│   │   ├── Dockerfile
+│   │   ├── pom.xml
+│   │   └── src
+│   │       ├── main
+│   │       │   ├── java
+│   │       │   │   └── com
+│   │       │   │       └── waqiti
+│   │       │   │           └── security-service
+│   │       │   │               ├── application
+│   │       │   │               │   ├── command
+│   │       │   │               │   ├── dto
+│   │       │   │               │   ├── port
+│   │       │   │               │   │   ├── input
+│   │       │   │               │   │   └── output
+│   │       │   │               │   ├── query
+│   │       │   │               │   └── service
+│   │       │   │               ├── behavior
+│   │       │   │               │   ├── analysis
+│   │       │   │               │   ├── reporting
+│   │       │   │               │   └── tracking
+│   │       │   │               ├── compliance
+│   │       │   │               │   ├── aml
+│   │       │   │               │   ├── kyc
+│   │       │   │               │   └── reporting
+│   │       │   │               ├── domain
+│   │       │   │               │   ├── aggregate
+│   │       │   │               │   ├── event
+│   │       │   │               │   ├── model
+│   │       │   │               │   ├── service
+│   │       │   │               │   └── valueobject
+│   │       │   │               ├── fraud
+│   │       │   │               │   ├── alerts
+│   │       │   │               │   ├── detection
+│   │       │   │               │   └── rules
+│   │       │   │               ├── infrastructure
+│   │       │   │               │   ├── client
+│   │       │   │               │   ├── messaging
+│   │       │   │               │   ├── persistence
+│   │       │   │               │   │   ├── entity
+│   │       │   │               │   │   ├── mapper
+│   │       │   │               │   │   └── repository
+│   │       │   │               │   └── security
+│   │       │   │               ├── mfa
+│   │       │   │               │   ├── api
+│   │       │   │               │   ├── provider
+│   │       │   │               │   └── service
+│   │       │   │               └── presentation
+│   │       │   │                   ├── api
+│   │       │   │                   ├── dto
+│   │       │   │                   └── mapper
+│   │       │   └── resources
+│   │       │       └── db
+│   │       │           └── migration
+│   │       └── test
+│   │           ├── java
+│   │           │   └── com
+│   │           │       └── waqiti
+│   │           │           └── security-service
+│   │           │               ├── contract
+│   │           │               ├── e2e
+│   │           │               ├── integration
+│   │           │               │   ├── api
+│   │           │               │   ├── client
+│   │           │               │   └── repository
+│   │           │               ├── performance
+│   │           │               └── unit
+│   │           │                   ├── domain
+│   │           │                   └── service
+│   │           └── resources
+│   │               ├── contracts
+│   │               └── test-data
+│   ├── user-service
+│   │   ├── Dockerfile
+│   │   ├── logs
+│   │   │   ├── user-service.log
+│   │   │   ├── user-service.log.2025-03-21.0.gz
+│   │   │   └── user-service.log.2025-03-22.0.gz
+│   │   ├── pom.xml
+│   │   ├── src
+│   │   │   ├── main
+│   │   │   │   ├── java
+│   │   │   │   │   └── com
+│   │   │   │   │       ├── p2pfinance
+│   │   │   │   │       └── waqiti
+│   │   │   │   │           └── user
+│   │   │   │   │               ├── api
+│   │   │   │   │               │   ├── AdminController.java
+│   │   │   │   │               │   ├── AuthController.java
+│   │   │   │   │               │   ├── GlobalExceptionHandler.java
+│   │   │   │   │               │   ├── MfaController.java
+│   │   │   │   │               │   ├── OAuth2Controller.java
+│   │   │   │   │               │   └── UserController.java
+│   │   │   │   │               ├── client
+│   │   │   │   │               │   ├── dto
+│   │   │   │   │               │   │   ├── CreateUserRequest.java
+│   │   │   │   │               │   │   ├── CreateUserResponse.java
+│   │   │   │   │               │   │   ├── UpdateUserRequest.java
+│   │   │   │   │               │   │   ├── UpdateUserResponse.java
+│   │   │   │   │               │   │   ├── UpdateUserStatusRequest.java
+│   │   │   │   │               │   │   └── UpdateUserStatusResponse.java
+│   │   │   │   │               │   ├── IntegrationServiceClient.java
+│   │   │   │   │               │   └── NotificationServiceClient.java
+│   │   │   │   │               ├── config
+│   │   │   │   │               │   ├── OAuth2SecurityConfig.java
+│   │   │   │   │               │   └── SecurityConfig.java
+│   │   │   │   │               ├── domain
+│   │   │   │   │               │   ├── AuthenticationFailedException.java
+│   │   │   │   │               │   ├── InvalidUserStateException.java
+│   │   │   │   │               │   ├── InvalidVerificationTokenException.java
+│   │   │   │   │               │   ├── KycStatus.java
+│   │   │   │   │               │   ├── KycVerificationFailedException.java
+│   │   │   │   │               │   ├── MfaConfiguration.java
+│   │   │   │   │               │   ├── MfaMethod.java
+│   │   │   │   │               │   ├── MfaVerificationCode.java
+│   │   │   │   │               │   ├── User.java
+│   │   │   │   │               │   ├── UserAlreadyExistsException.java
+│   │   │   │   │               │   ├── UserExceptions.java
+│   │   │   │   │               │   ├── UserNotFoundException.java
+│   │   │   │   │               │   ├── UserProfile.java
+│   │   │   │   │               │   ├── UserStatus.java
+│   │   │   │   │               │   ├── VerificationToken.java
+│   │   │   │   │               │   └── VerificationType.java
+│   │   │   │   │               ├── dto
+│   │   │   │   │               │   ├── AuthenticationRequest.java
+│   │   │   │   │               │   ├── AuthenticationResponse.java
+│   │   │   │   │               │   ├── MfaSetupRequest.java
+│   │   │   │   │               │   ├── MfaSetupResponse.java
+│   │   │   │   │               │   ├── MfaStatusResponse.java
+│   │   │   │   │               │   ├── MfaVerifyRequest.java
+│   │   │   │   │               │   ├── PasswordChangeRequest.java
+│   │   │   │   │               │   ├── PasswordResetInitiationRequest.java
+│   │   │   │   │               │   ├── PasswordResetRequest.java
+│   │   │   │   │               │   ├── TokenRefreshRequest.java
+│   │   │   │   │               │   ├── TokenVerificationRequest.java
+│   │   │   │   │               │   ├── TwoFactorNotificationRequest.java
+│   │   │   │   │               │   ├── UpdateProfileRequest.java
+│   │   │   │   │               │   ├── UserProfileResponse.java
+│   │   │   │   │               │   ├── UserRegistrationRequest.java
+│   │   │   │   │               │   └── UserResponse.java
+│   │   │   │   │               ├── exception
+│   │   │   │   │               ├── repository
+│   │   │   │   │               │   ├── MfaConfigurationRepository.java
+│   │   │   │   │               │   ├── MfaVerificationCodeRepository.java
+│   │   │   │   │               │   ├── UserProfileRepository.java
+│   │   │   │   │               │   ├── UserRepository.java
+│   │   │   │   │               │   └── VerificationTokenRepository.java
+│   │   │   │   │               ├── security
+│   │   │   │   │               │   ├── CustomUserDetailsService.java
+│   │   │   │   │               │   ├── JwtAuthenticationFilter.java
+│   │   │   │   │               │   ├── JwtTestHelper.java
+│   │   │   │   │               │   └── JwtTokenProvider.java
+│   │   │   │   │               ├── service
+│   │   │   │   │               │   ├── AuthService.java
+│   │   │   │   │               │   ├── MfaService.java
+│   │   │   │   │               │   ├── OAuth2Service.java
+│   │   │   │   │               │   └── UserService.java
+│   │   │   │   │               └── UserServiceApplication.java
+│   │   │   │   └── resources
+│   │   │   │       ├── application.yml
+│   │   │   │       └── db
+│   │   │   │           └── migration
+│   │   │   │               ├── V1__create_user_tables.sql
+│   │   │   │               └── V2__create_mfa_tables.sql
+│   │   │   └── test
+│   │   │       ├── java
+│   │   │       │   └── com
+│   │   │       │       ├── p2pfinance
+│   │   │       │       └── waqiti
+│   │   │       │           └── user
+│   │   │       │               ├── config
+│   │   │       │               │   ├── SecurityTestContextInitializer.java
+│   │   │       │               │   ├── TestConfig.java
+│   │   │       │               │   ├── TestJwtSecurityConfig.java
+│   │   │       │               │   └── TestSecurityConfig.java
+│   │   │       │               ├── security
+│   │   │       │               │   ├── JwtTestHelper.java
+│   │   │       │               │   └── SecurityTest.java
+│   │   │       │               └── service
+│   │   │       │                   └── UserServiceTest.java
+│   │   │       └── resources
+│   │   │           └── application-test.yml
+│   │   └── user-service.llm
+│   └── wallet-service
+│       ├── Dockerfile
+│       ├── logs
+│       │   ├── wallet-service.log
+│       │   ├── wallet-service.log.2025-03-16.0.gz
+│       │   └── wallet-service.log.2025-03-17.0.gz
+│       ├── pom.xml
+│       └── src
+│           ├── main
+│           │   ├── java
+│           │   │   └── com
+│           │   │       ├── p2pfinance
+│           │   │       └── waqiti
+│           │   │           └── wallet
+│           │   │               ├── api
+│           │   │               │   ├── CurrencyController.java
+│           │   │               │   ├── GlobalExceptionHandler.java
+│           │   │               │   └── WalletController.java
+│           │   │               ├── client
+│           │   │               │   ├── dto
+│           │   │               │   │   ├── CreateWalletRequest.java
+│           │   │               │   │   ├── CreateWalletResponse.java
+│           │   │               │   │   ├── DepositRequest.java
+│           │   │               │   │   ├── DepositResponse.java
+│           │   │               │   │   ├── GetBalanceRequest.java
+│           │   │               │   │   ├── GetBalanceResponse.java
+│           │   │               │   │   ├── TransferRequest.java
+│           │   │               │   │   ├── TransferResponse.java
+│           │   │               │   │   ├── WithdrawalRequest.java
+│           │   │               │   │   └── WithdrawalResponse.java
+│           │   │               │   └── IntegrationServiceClient.java
+│           │   │               ├── config
+│           │   │               ├── domain
+│           │   │               │   ├── ConcurrentModificationException.java
+│           │   │               │   ├── InsufficientBalanceException.java
+│           │   │               │   ├── Transaction.java
+│           │   │               │   ├── TransactionFailedException.java
+│           │   │               │   ├── TransactionStatus.java
+│           │   │               │   ├── TransactionType.java
+│           │   │               │   ├── Wallet.java
+│           │   │               │   ├── WalletNotActiveException.java
+│           │   │               │   ├── WalletNotFoundException.java
+│           │   │               │   └── WalletStatus.java
+│           │   │               ├── dto
+│           │   │               │   ├── CreateWalletRequest.java
+│           │   │               │   ├── CurrencyConversionRequest.java
+│           │   │               │   ├── CurrencyConversionResponse.java
+│           │   │               │   ├── DepositRequest.java
+│           │   │               │   ├── TransactionResponse.java
+│           │   │               │   ├── TransferRequest.java
+│           │   │               │   ├── WalletResponse.java
+│           │   │               │   └── WithdrawalRequest.java
+│           │   │               ├── event
+│           │   │               │   ├── TransactionCompletedEvent.java
+│           │   │               │   └── WalletCreatedEvent.java
+│           │   │               ├── exception
+│           │   │               ├── repository
+│           │   │               │   ├── TransactionRepository.java
+│           │   │               │   └── WalletRepository.java
+│           │   │               ├── service
+│           │   │               │   ├── CurrencyConversionService.java
+│           │   │               │   ├── FeignIntegrationService.java
+│           │   │               │   ├── IntegrationService.java
+│           │   │               │   ├── TransactionLogger.java
+│           │   │               │   └── WalletService.java
+│           │   │               └── WalletServiceApplication.java
+│           │   └── resources
+│           │       ├── application.yml
+│           │       └── db
+│           │           └── migration
+│           │               └── V1__create_wallet_tables.sql
+│           └── test
+│               ├── java
+│               │   └── com
+│               │       ├── p2pfinance
+│               │       └── waqiti
+│               │           └── wallet
+│               │               ├── config
+│               │               │   └── TestConfig.java
+│               │               └── service
+│               │                   ├── WalletServiceIntegrationTest.java
+│               │                   └── WalletServiceTest.java
+│               └── resources
+│                   └── application-test.yml
+├── sqlfiles.txt
+├── t.txt
+├── target
+│   └── failsafe-reports
+│       └── failsafe-summary.xml
+├── testing-strategy.md
+└── trees.txt
+
+545 directories, 430 files

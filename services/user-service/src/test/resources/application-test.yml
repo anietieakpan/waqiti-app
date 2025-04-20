@@ -1,7 +1,7 @@
 # File: src/test/resources/application-test.yml
 spring:
   datasource:
-  # Configured by test containers
+    # Configured by test containers
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -31,6 +31,7 @@ security:
       secret-key: dGVzdHNlY3JldGtleWZvcnVuaXR0ZXN0c29ubHlub3Rmb3Jwcm9kdWN0aW9udGVzdHNlY3JldGtleWZvcnVuaXR0ZXN0cw==
       access-token-expire-length: 3600000
       refresh-token-expire-length: 86400000
+
 
 # Resilience4j configuration
 resilience4j:

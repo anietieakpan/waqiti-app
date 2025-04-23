@@ -45,3 +45,4 @@ me.sh
 config/secrets/.env.example
 config/secrets/*
 services/user-service/logs/*
+config/secrets/.env.example

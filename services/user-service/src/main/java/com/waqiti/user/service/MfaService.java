@@ -432,6 +432,29 @@ public class MfaService {
 
 
     /**
+     * Resets all MFA configurations for a user (admin function)
+     * @param userId The user ID
+     * @return True if reset was successful
+     */
+    @Transactional
+    public boolean resetUserMfa(UUID userId) {
+        log.info("Resetting MFA for user: {}", userId);
+
+        // Find all MFA configurations for the user and disable them
+        List<MfaConfiguration> configs = mfaConfigRepository.findByUserId(userId);
+        for (MfaConfiguration config : configs) {
+            config.disable();
+        }
+        mfaConfigRepository.saveAll(configs);
+
+        // Delete any verification codes
+        verificationCodeRepository.deleteByUserId(userId);
+
+        return true;
+    }
+
+
+    /**
      * Cleanup expired verification codes
      */
     @Scheduled(cron = "0 0 * * * *") // Run every hour

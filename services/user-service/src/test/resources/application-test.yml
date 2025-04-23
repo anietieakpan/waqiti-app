@@ -1,7 +1,14 @@
 # File: src/test/resources/application-test.yml
 spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
   datasource:
-    # Configured by test containers
+  # Configured by test containers
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -9,7 +16,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   flyway:
-    enabled: false
+    enabled: true  # Make sure this matches what your test needs
   main:
     allow-bean-definition-overriding: true
   autoconfigure:
@@ -22,16 +29,28 @@ spring:
       resourceserver:
         jwt:
           enabled: false
-          issuer-uri: http://localhost:8080/auth  # Add this line
+          issuer-uri: http://localhost:8080/auth  # Included per your comment
 
-# JWT Configuration - Using Base64 encoded key without hyphens
+# Correct JWT Configuration for the JwtTokenProvider class
 security:
   jwt:
     token:
-      secret-key: dGVzdHNlY3JldGtleWZvcnVuaXR0ZXN0c29ubHlub3Rmb3Jwcm9kdWN0aW9udGVzdHNlY3JldGtleWZvcnVuaXR0ZXN0cw==
+      # Base64 encoded secure key
+      secret-key: VGhpc0lzQVZlcnlMb25nQW5kU2VjdXJlVGVzdEtleVRoYXRJc1N1ZmZpY2llbnRseUxvbmdGb3JUaGVITUFDU0hBQWxnb3JpdGhtMTIzNDU2Nzg5
       access-token-expire-length: 3600000
       refresh-token-expire-length: 86400000
 
+# File: src/test/resources/application-test.yml
+# (Add this property to your existing file)
+
+oauth2:
+  state:
+    secret: "test-oauth2-state-secret"
+
+# Keep the old app.jwt.secret for backward compatibility if needed
+app:
+  jwt:
+    secret: ThisIsAVeryLongAndSecureTestKeyThatIsSufficientlyLongForTheHMACSHAAlgorithm123456789
 
 # Resilience4j configuration
 resilience4j:

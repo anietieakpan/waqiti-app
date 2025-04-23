@@ -1,11 +1,12 @@
-/**
- * File: src/test/java/com/waqiti/user/auth/AuthenticationMfaE2ETest.java
- * End-to-end tests for the complete MFA authentication flow
- */
+// File: src/test/java/com/waqiti/user/auth/AuthenticationMfaE2ETest.java
 package com.waqiti.user.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.waqiti.user.client.IntegrationServiceClient;
 import com.waqiti.user.client.NotificationServiceClient;
+import com.waqiti.user.client.dto.CreateUserResponse;
+import com.waqiti.user.config.MfaTestConfig;
+import com.waqiti.user.config.TestSecurityConfiguration;
 import com.waqiti.user.domain.MfaConfiguration;
 import com.waqiti.user.domain.MfaMethod;
 import com.waqiti.user.domain.MfaVerificationCode;
@@ -17,6 +18,7 @@ import com.waqiti.user.dto.MfaVerifyRequest;
 import com.waqiti.user.repository.MfaConfigurationRepository;
 import com.waqiti.user.repository.MfaVerificationCodeRepository;
 import com.waqiti.user.repository.UserRepository;
+import com.waqiti.user.service.OAuth2Service;
 import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
 import dev.samstevens.totp.exceptions.CodeGenerationException;
@@ -30,26 +32,59 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 @AutoConfigureMockMvc
+@Import({MfaTestConfig.class, TestSecurityConfiguration.class})
 @TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:tc:postgresql:13:///testdb",
-        "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}"
+        "spring.main.allow-bean-definition-overriding=true",
+        "oauth2.state.secret=test-oauth2-state-secret",
+        "security.jwt.token.secret-key=VGhpc0lzQVZlcnlMb25nQW5kU2VjdXJlVGVzdEtleVRoYXRJc1N1ZmZpY2llbnRseUxvbmdGb3JUaGVITUFDU0hBQWxnb3JpdGhtMTIzNDU2Nzg5"
 })
+@ActiveProfiles("test")
+@Testcontainers
 class AuthenticationMfaE2ETest {
+
+    @Container
+    static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:13")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test");
+
+    @DynamicPropertySource
+    static void registerDynamicProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgresContainer::getUsername);
+        registry.add("spring.datasource.password", postgresContainer::getPassword);
+
+        // If you use Flyway, add these too:
+        registry.add("spring.flyway.url", postgresContainer::getJdbcUrl);
+        registry.add("spring.flyway.user", postgresContainer::getUsername);
+        registry.add("spring.flyway.password", postgresContainer::getPassword);
+    }
+
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -65,11 +100,24 @@ class AuthenticationMfaE2ETest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    // Mock all external dependencies to prevent conflicts
     @MockBean
     private NotificationServiceClient notificationServiceClient;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @MockBean
+    private IntegrationServiceClient integrationServiceClient;
+
+    @MockBean
+    private OAuth2Service oAuth2Service;
+
+    @MockBean
+    private ClientRegistrationRepository clientRegistrationRepository;
+
+    @MockBean
+    private OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
 
     private User testUser;
     private final String testPassword = "Password123!";
@@ -92,6 +140,66 @@ class AuthenticationMfaE2ETest {
         // Mock notification service
         when(notificationServiceClient.sendTwoFactorSms(any())).thenReturn(true);
         when(notificationServiceClient.sendTwoFactorEmail(any())).thenReturn(true);
+
+        // Mock integration service
+        CreateUserResponse mockResponse = CreateUserResponse.builder()
+                .externalId("ext-test-123")
+                .status("ACTIVE")
+                .build();
+        when(integrationServiceClient.createUser(any())).thenReturn(mockResponse);
+    }
+
+    @Test
+    @DisplayName("Should authenticate user with basic credentials")
+    void testBasicAuthentication() {
+        // Create a test user with known credentials
+        String username = "testuser";
+        String password = "TestPassword123!";
+
+        // Delete existing user if any
+        userRepository.findByUsername(username).ifPresent(user -> userRepository.delete(user));
+
+        // Create a new user with known credentials
+        User user = User.create(username, username + "@example.com", passwordEncoder.encode(password), "ext-test-123");
+        user.activate();
+        user = userRepository.save(user);
+
+        // Print debug information
+        System.out.println("Created test user: " + user.getUsername() + ", active: " + user.isActive());
+//        System.out.println("Password matches: " + passwordEncoder.matches(password, user.getPassword()));
+
+        // Create login request
+        AuthenticationRequest loginRequest = new AuthenticationRequest(username, password);
+
+        // Set up headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<AuthenticationRequest> requestEntity = new HttpEntity<>(loginRequest, headers);
+
+        // Try to authenticate
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/v1/auth/login",
+                HttpMethod.POST,
+                requestEntity,
+                String.class);
+
+        // Print response details
+        System.out.println("Authentication Response Status: " + response.getStatusCode());
+        System.out.println("Authentication Response Body: " + response.getBody());
+
+        // Assert success
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+    }
+
+    @Test
+    @DisplayName("Should access health endpoint")
+    void testHealthEndpoint() {
+        ResponseEntity<String> response = restTemplate.getForEntity("/actuator/health", String.class);
+
+        System.out.println("Health Endpoint Status: " + response.getStatusCode());
+        System.out.println("Health Endpoint Body: " + response.getBody());
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
@@ -100,6 +208,35 @@ class AuthenticationMfaE2ETest {
         // Step 1: Login without MFA configured
         AuthenticationRequest loginRequest = new AuthenticationRequest(
                 testUser.getUsername(), testPassword);
+
+        // Print debug information about the test user
+        System.out.println("====== DEBUG TEST USER INFO =======");
+        System.out.println("User ID: " + testUser.getId());
+        System.out.println("Username: " + testUser.getUsername());
+        System.out.println("Is Active: " + testUser.isActive());
+        System.out.println("Password from test: " + testPassword);
+//        System.out.println("Encoded Password in DB: " + testUser.getPassword().substring(0, 10) + "...");
+//        System.out.println("Password matches: " + passwordEncoder.matches(testPassword, testUser.getPassword()));
+        System.out.println("==================================");
+
+        // Debug the request
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<AuthenticationRequest> requestEntity = new HttpEntity<>(loginRequest, headers);
+
+        // Log the request details
+        System.out.println("Sending login request with username: " + testUser.getUsername());
+        System.out.println("Password length: " + testPassword.length());
+
+        // Get raw response for debugging
+        ResponseEntity<String> debugResponse = restTemplate.exchange(
+                "/api/v1/auth/login",
+                HttpMethod.POST,
+                requestEntity,
+                String.class);
+
+        System.out.println("Debug Response Status: " + debugResponse.getStatusCode());
+        System.out.println("Debug Response Body: " + debugResponse.getBody());
 
         ResponseEntity<AuthenticationResponse> initialLoginResponse = restTemplate.postForEntity(
                 "/api/v1/auth/login", loginRequest, AuthenticationResponse.class);
@@ -111,7 +248,6 @@ class AuthenticationMfaE2ETest {
         assertNotNull(initialAuth.getAccessToken());
 
         // Step 2: Configure TOTP MFA
-        HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(initialAuth.getAccessToken());
 
         ResponseEntity<MfaSetupResponse> totpSetupResponse = restTemplate.exchange(
@@ -238,29 +374,10 @@ class AuthenticationMfaE2ETest {
     }
 
     // Helper methods
-
     private String generateTotpCode(String secret) throws CodeGenerationException {
         TimeProvider timeProvider = new SystemTimeProvider();
         CodeGenerator codeGenerator = new DefaultCodeGenerator();
         long counter = timeProvider.getTime() / 30;
         return codeGenerator.generate(secret, counter);
-    }
-
-    private void setupTotp() {
-        // Create TOTP configuration
-        MfaConfiguration totpConfig = MfaConfiguration.create(
-                testUser.getId(), MfaMethod.TOTP, "ORZXG2LQOJUXIZLTOQXQ====");
-        totpConfig.markVerified();
-        totpConfig.enable();
-        mfaConfigRepository.save(totpConfig);
-    }
-
-    private void setupSms() {
-        // Create SMS configuration
-        MfaConfiguration smsConfig = MfaConfiguration.create(
-                testUser.getId(), MfaMethod.SMS, "+1234567890");
-        smsConfig.markVerified();
-        smsConfig.enable();
-        mfaConfigRepository.save(smsConfig);
     }
 }

@@ -2,7 +2,8 @@
 package com.waqiti.user.config;
 
 import com.waqiti.user.security.JwtAuthenticationFilter;
-import com.waqiti.user.security.JwtTokenProvider;
+import com.waqiti.user.security.TestJwtTokenProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -30,11 +31,13 @@ import java.util.Base64;
 @EnableMethodSecurity
 public class TestSecurityConfig {
 
+    @Autowired
+    private TestJwtTokenProvider testJwtTokenProvider;
+
     @Bean
     @Primary
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
-            JwtTokenProvider tokenProvider,
             UserDetailsService userDetailsService) throws Exception {
 
         return http
@@ -51,9 +54,9 @@ public class TestSecurityConfig {
                 // Explicitly disable OAuth2 configuration
                 .oauth2ResourceServer(AbstractHttpConfigurer::disable)
                 .oauth2Client(AbstractHttpConfigurer::disable)
-                // Add our custom JWT filter before the UsernamePasswordAuthenticationFilter
+                // Add our custom JWT filter with TestJwtTokenProvider
                 .addFilterBefore(
-                        new JwtAuthenticationFilter(tokenProvider, userDetailsService),
+                        new JwtAuthenticationFilter(testJwtTokenProvider, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class
                 )
                 .build();
@@ -69,13 +72,13 @@ public class TestSecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
-    // Add this JwtDecoder bean to satisfy the dependency
+    // Use a secure key for the JwtDecoder
     @Bean
     @Primary
     public JwtDecoder jwtDecoder() {
-        // Create a dummy key for test purposes
-        String secret = "dGVzdHNlY3JldGtleWZvcnVuaXR0ZXN0c29ubHlub3Rmb3Jwcm9kdWN0aW9udGVzdHNlY3JldGtleWZvcnVuaXR0ZXN0cw==";
-        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        // Create a secure key for test purposes (at least 256 bits)
+        String strongKey = "ThisIsAVeryLongAndSecureTestKeyThatIsSufficientlyLongForTheHMACSHAAlgorithm123456789";
+        byte[] keyBytes = Base64.getEncoder().encodeToString(strongKey.getBytes()).getBytes();
         SecretKey secretKey = new SecretKeySpec(keyBytes, "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(secretKey).build();
     }

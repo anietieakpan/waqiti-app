@@ -42,3 +42,5 @@ p2p-finance-app.llm
 */*/*/*/*/*.llm
 *tree*
 me.sh
+config/secrets/.env.example
+services/user-service/logs/*

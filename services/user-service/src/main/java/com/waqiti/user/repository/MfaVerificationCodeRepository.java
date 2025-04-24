@@ -17,6 +17,14 @@ import java.util.UUID;
 public interface MfaVerificationCodeRepository extends JpaRepository<MfaVerificationCode, UUID> {
 
     /**
+     * Functional interface for mocking in tests
+     */
+    @FunctionalInterface
+    public interface FindLatestActiveCodeMethod {
+        Optional<MfaVerificationCode> find(UUID userId, MfaMethod method, LocalDateTime now);
+    }
+
+    /**
      * Find the latest unused verification code
      */
     @Query("SELECT v FROM MfaVerificationCode v WHERE v.userId = :userId AND v.method = :method " +

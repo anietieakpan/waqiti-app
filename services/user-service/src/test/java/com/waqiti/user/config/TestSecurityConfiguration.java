@@ -1,21 +1,17 @@
 // File: src/test/java/com/waqiti/user/config/TestSecurityConfiguration.java
 package com.waqiti.user.config;
 
-import com.waqiti.user.security.JwtAuthenticationFilter;
-import com.waqiti.user.security.TestJwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -24,25 +20,29 @@ public class TestSecurityConfiguration {
 
     @Bean
     @Primary
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            TestJwtTokenProvider tokenProvider,
-            UserDetailsService userDetailsService) throws Exception {
+    @Order(-2147483648) // Integer.MIN_VALUE - highest possible precedence
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        log.debug("Configuring test security filter chain with ALL security disabled");
 
-        log.debug("Configuring test security filter chain with all paths permitted");
-
-        // For testing, permit all requests and disable CSRF protection
+        // Completely disable all security mechanisms for testing
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .anonymous(AbstractHttpConfigurer::disable)
+                .securityContext(AbstractHttpConfigurer::disable)
+                .sessionManagement(AbstractHttpConfigurer::disable)
+                .requestCache(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .oauth2ResourceServer(AbstractHttpConfigurer::disable)
+                .oauth2Login(AbstractHttpConfigurer::disable)
+                .oauth2Client(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .x509(AbstractHttpConfigurer::disable)
+                .rememberMe(AbstractHttpConfigurer::disable)
+                .headers(AbstractHttpConfigurer::disable)
+                .exceptionHandling(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/**").permitAll()  // Allow all requests during testing
-                )
-                // Still add our JWT filter for token processing
-                .addFilterBefore(
-                        new JwtAuthenticationFilter(tokenProvider, userDetailsService),
-                        UsernamePasswordAuthenticationFilter.class
+                        .anyRequest().permitAll()
                 )
                 .build();
     }

@@ -8,6 +8,7 @@ import com.waqiti.user.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,12 +25,25 @@ public class AuthController {
         return ResponseEntity.ok(authService.authenticate(request));
     }
 
+
     @PostMapping("/mfa/verify")
     public ResponseEntity<AuthenticationResponse> verifyMfa(
-            @RequestHeader("X-MFA-Token") String mfaToken,
+            @RequestHeader(value = "X-MFA-Token", required = false) String xMfaToken,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
             @Valid @RequestBody MfaVerifyRequest request) {
-        log.info("MFA verification request received with method: {}", request.getMethod());
-        return ResponseEntity.ok(authService.verifyMfa(mfaToken, request));
+
+        // Extract token from Authorization header if X-MFA-Token is not present
+        String mfaToken = xMfaToken;
+        if (mfaToken == null && authHeader != null && authHeader.startsWith("Bearer ")) {
+            mfaToken = authHeader.substring(7);
+        }
+
+        if (mfaToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        AuthenticationResponse response = authService.verifyMfa(mfaToken, request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/refresh")
@@ -46,4 +60,5 @@ public class AuthController {
         authService.logout(refreshToken);
         return ResponseEntity.ok().build();
     }
+
 }
